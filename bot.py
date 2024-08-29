@@ -1,8 +1,10 @@
+import io
 import os
 import discord
 from discord.ext import commands
-from flask import Flask, request
+from flask import Flask, request, json
 from threading import Thread
+from discord import File
 
 app = Flask(__name__)
 
@@ -117,9 +119,17 @@ def github_webhook():
     return 'OK', 200
 
 
-def send_to_discord(message):
-    channel = bot.get_channel(1278517612292210789)  # Reemplaza con el ID de tu canal
-    bot.loop.create_task(channel.send(message))
+def send_to_discord(message, data=None):
+    channel = bot.get_channel(1278770255711309906)  # Reemplaza con el ID de tu canal
+    if data:
+        # Convertir el diccionario a un string JSON
+        json_bytes = json.dumps(data, indent=4, ensure_ascii=False).encode('utf-8')
+        json_file = File(io.BytesIO(json_bytes), filename="data.json")
+        # Enviar mensaje personalizado con el archivo adjunto
+        message = f"{message}\nEl JSON completo está adjunto."
+        bot.loop.create_task(channel.send(message, file=json_file))
+    else:
+        bot.loop.create_task(channel.send(message))
 
 
 # Aquí están todos los manejadores de eventos
