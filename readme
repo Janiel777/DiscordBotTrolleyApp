@@ -1,0 +1,10 @@
+
+Siempre que se haga algun cambio se ejecutan esos comandos para subirlo a heroku
+git add .
+git commit -m "Descripción de los cambios"
+git push heroku main
+
+
+Si el bot no esta activo con este comando se puede poner a trabajar:
+heroku ps:scale worker=1
+
