@@ -208,7 +208,14 @@ def handle_fork_event(data):
 def handle_star_event(data):
     action = data['action']
     repo_name = data['repository']['full_name']
-    message = f"Repo {repo_name} fue {action}!"
+    user = data['sender']['login']
+    user_profile_url = data['sender']['html_url']
+
+    if action == "created":
+        message = f"⭐ ¡{user} ha marcado el repositorio [{repo_name}](https://github.com/{repo_name}) con una estrella! Puedes ver su perfil [aquí]({user_profile_url})."
+    elif action == "deleted":
+        message = f"⚠️ {user} ha eliminado la estrella del repositorio [{repo_name}](https://github.com/{repo_name}). Puedes ver su perfil [aquí]({user_profile_url})."
+
     send_to_discord(message, data)
 
 
