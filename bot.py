@@ -14,6 +14,61 @@ GITHUB_SECRET = os.getenv('GITHUB_SECRET')
 bot = commands.Bot(command_prefix="!")
 
 
+@app.route('/')
+def index():
+    # Lista de todas las notificaciones que maneja el bot
+    notifications = [
+        "push",
+        "issues",
+        "issue_comment",
+        "pull_request",
+        "pull_request_review",
+        "pull_request_review_comment",
+        "release",
+        "fork",
+        "star",
+        "repository",
+        "branch_protection_rule",
+        "milestone",
+        "commit_comment",
+        "collaborator",
+        "deploy_key",
+        "deployment",
+        "deployment_status",
+        "check_run",
+        "check_suite",
+        "discussion",
+        "discussion_comment",
+        "merge_group",
+        "package",
+        "page_build",
+        "project",
+        "project_card",
+        "project_column",
+        "registry_package",
+        "repository_advisory",
+        "repository_import",
+        "repository_ruleset",
+        "repository_vulnerability_alert",
+        "secret_scanning_alert",
+        "secret_scanning_alert_location",
+        "security_and_analyses",
+        "status",
+        "team_add",
+        "visibility_change",
+        "watch",
+        "wiki",
+        "workflow_job",
+        "workflow_run",
+        "branch_or_tag_creation",
+        "branch_or_tag_deletion",
+        "branch_protection_configurations",
+        "bypass_push_rulesets",
+        "bypass_secret_scanning",
+        "label"
+    ]
+    return "<h1>Notificaciones que maneja el bot</h1>" + "<ul>" + "".join(f"<li>{notification}</li>" for notification in notifications) + "</ul>"
+
 @app.route('/github-webhook', methods=['POST'])
 def github_webhook():
     data = request.json
@@ -275,11 +330,11 @@ def handle_deployment_status_event(data):
     send_to_discord(message, data)
 
 
-def handle_deployment_status_event(data):
-    state = data['deployment_status']['state']
-    deployment_url = data['deployment_status']['target_url']
+def handle_deployment_event(data):
+    action = data['action']
+    deployment_id = data['deployment']['id']
     repo_name = data['repository']['full_name']
-    message = f"Estado de despliegue cambiado a {state}: {deployment_url} en {repo_name}"
+    message = f"🚀 **Despliegue** con ID **{deployment_id}** fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -541,6 +596,13 @@ def handle_label_event(data):
 def run_flask():
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
 
+
+@bot.command(name='notificaciones')
+async def notificaciones(ctx):
+    # Aquí defines la URL de tu servidor donde estarán listadas las notificaciones
+    server_url = "https://discord-bot-trolley-app-7cf3be57fb8b.herokuapp.com/"  # Reemplaza con la URL real de tu servidor
+    message = f"Puedes ver todas las notificaciones que manejo en la siguiente URL: {server_url}"
+    await ctx.send(message)
 
 @bot.event
 async def on_ready():
