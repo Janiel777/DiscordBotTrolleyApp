@@ -139,8 +139,8 @@ def handle_push_event(data):
     commit_message = data['head_commit']['message']
     commit_url = data['head_commit']['url']
     repo_name = data['repository']['full_name']
-    message = f"Nuevo push en {repo_name} por {pusher} en la rama '{branch}': [{commit_message}]({commit_url})"
-    send_to_discord("@everyone " + message, data)
+    message = f"🚀 @everyone ¡Nuevo push en **{repo_name}**! \n🔧 **{pusher}** ha realizado un commit en la rama '**{branch}**'.\n\n**Mensaje del commit:** [{commit_message}]({commit_url})"
+    send_to_discord(message, data)
 
 
 
@@ -149,7 +149,7 @@ def handle_issue_event(data):
     issue_title = data['issue']['title']
     issue_url = data['issue']['html_url']
     repo_name = data['repository']['full_name']
-    message = f"Issue '{issue_title}' fue {action}: {issue_url} en {repo_name}"
+    message = f"🐛 **Issue** '{issue_title}' fue **{action}** en **{repo_name}**.\n🔗 [Ver issue]({issue_url})"
     send_to_discord(message, data)
 
 
@@ -158,8 +158,8 @@ def handle_issue_comment_event(data):
     comment_url = data['comment']['html_url']
     issue_title = data['issue']['title']
     repo_name = data['repository']['full_name']
-    message = f"Comentario en el issue '{issue_title}' fue {action}: {comment_url} en {repo_name}"
-    send_to_discord("@everyone " + message, data)
+    message = f"💬 ¡Nuevo comentario en el issue '**{issue_title}**' en **{repo_name}**!\n🔗 **Acción:** {action} | [Ver comentario]({comment_url})"
+    send_to_discord(message, data)
 
 
 def handle_pull_request_event(data):
@@ -167,15 +167,15 @@ def handle_pull_request_event(data):
     pr_title = data['pull_request']['title']
     pr_url = data['pull_request']['html_url']
     repo_name = data['repository']['full_name']
-    message = f"Pull request '{pr_title}' fue {action}: {pr_url} en {repo_name}"
-    send_to_discord("@everyone " + message, data)
+    message = f"🔄 @everyone **Pull request** '**{pr_title}**' en **{repo_name}** fue {action}.\n🔗 [Ver pull request]({pr_url})"
+    send_to_discord(message, data)
 
 
 def handle_pull_request_review_event(data):
     action = data['action']
     pr_title = data['pull_request']['title']
     repo_name = data['repository']['full_name']
-    message = f"Revisión del PR '{pr_title}' fue {action} en {repo_name}"
+    message = f"🔍 **Revisión del PR** '{pr_title}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -184,7 +184,7 @@ def handle_pull_request_review_comment_event(data):
     comment_url = data['comment']['html_url']
     pr_title = data['pull_request']['title']
     repo_name = data['repository']['full_name']
-    message = f"Comentario en la revisión del PR '{pr_title}' fue {action}: {comment_url} en {repo_name}"
+    message = f"💬 **Comentario en revisión del PR** '{pr_title}' fue **{action}** en **{repo_name}**.\n🔗 [Ver comentario]({comment_url})"
     send_to_discord(message, data)
 
 
@@ -193,7 +193,7 @@ def handle_release_event(data):
     release_name = data['release']['name']
     release_url = data['release']['html_url']
     repo_name = data['repository']['full_name']
-    message = f"Release '{release_name}' fue {action}: {release_url} en {repo_name}"
+    message = f"🚀 **Release** '{release_name}' fue **{action}** en **{repo_name}**.\n🔗 [Ver release]({release_url})"
     send_to_discord(message, data)
 
 
@@ -201,7 +201,7 @@ def handle_fork_event(data):
     forkee_full_name = data['forkee']['full_name']
     forkee_url = data['forkee']['html_url']
     repo_name = data['repository']['full_name']
-    message = f"Repositorio {repo_name} fue forked: [{forkee_full_name}]({forkee_url})"
+    message = f"🍴 **Repositorio** {repo_name} fue **forked**.\n🔗 [{forkee_full_name}]({forkee_url})"
     send_to_discord(message, data)
 
 
@@ -219,10 +219,11 @@ def handle_star_event(data):
     send_to_discord(message, data)
 
 
+
 def handle_repository_event(data):
     action = data['action']
     repo_name = data['repository']['full_name']
-    message = f"@everyone Repositorio {repo_name} fue {action}"
+    message = f"🏗️ @everyone ¡Repositorio **{repo_name}** ha sido **{action}**!"
     send_to_discord(message, data)
 
 
@@ -237,7 +238,7 @@ def handle_milestone_event(data):
     action = data['action']
     milestone_title = data['milestone']['title']
     repo_name = data['repository']['full_name']
-    message = f"@everyone Hito '{milestone_title}' fue {action} en {repo_name}"
+    message = f"🎯 @everyone ¡Milestone en **{repo_name}**! \n**Milestone:** '{milestone_title}' fue **{action}**."
     send_to_discord(message, data)
 
 
@@ -246,7 +247,7 @@ def handle_commit_comment_event(data):
     comment_url = data['comment']['html_url']
     commit_id = data['comment']['commit_id']
     repo_name = data['repository']['full_name']
-    message = f"@everyone Comentario en commit {commit_id} fue {action}: {comment_url} en {repo_name}"
+    message = f"✏️ @everyone **Comentario en commit** en **{repo_name}**!\n🔗 **Acción:** {action} en el commit **{commit_id}**.\n[Ver comentario]({comment_url})"
     send_to_discord(message, data)
 
 
@@ -254,7 +255,7 @@ def handle_collaborator_event(data):
     action = data['action']
     collaborator = data['collaborator']['login']
     repo_name = data['repository']['full_name']
-    message = f"Colaborador '{collaborator}' fue {action} en {repo_name}"
+    message = f"👥 **Colaborador** '{collaborator}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -262,15 +263,15 @@ def handle_deploy_key_event(data):
     action = data['action']
     key_title = data['key']['title']
     repo_name = data['repository']['full_name']
-    message = f"Clave de despliegue '{key_title}' fue {action} en {repo_name}"
+    message = f"🔑 **Clave de despliegue** '{key_title}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
-def handle_deployment_event(data):
-    action = data['action']
-    deployment_id = data['deployment']['id']
+def handle_deployment_status_event(data):
+    state = data['deployment_status']['state']
+    deployment_url = data['deployment_status']['target_url']
     repo_name = data['repository']['full_name']
-    message = f"Despliegue con ID {deployment_id} fue {action} en {repo_name}"
+    message = f"🚦 **Estado de despliegue** cambió a **{state}** en **{repo_name}**.\n🔗 [Ver estado]({deployment_url})"
     send_to_discord(message, data)
 
 
@@ -286,14 +287,14 @@ def handle_check_run_event(data):
     action = data['action']
     check_name = data['check_run']['name']
     repo_name = data['repository']['full_name']
-    message = f"Check run '{check_name}' fue {action} en {repo_name}"
+    message = f"✅ **Check run** '{check_name}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
 def handle_check_suite_event(data):
     action = data['action']
     repo_name = data['repository']['full_name']
-    message = f"Check suite fue {action} en {repo_name}"
+    message = f"✅ **Check suite** fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -302,7 +303,7 @@ def handle_discussion_event(data):
     discussion_title = data['discussion']['title']
     discussion_url = data['discussion']['html_url']
     repo_name = data['repository']['full_name']
-    message = f"@everyone Discusión '{discussion_title}' fue {action}: {discussion_url} en {repo_name}"
+    message = f"@everyone 🗣️ **Discusión** '{discussion_title}' fue **{action}** en **{repo_name}**.\n🔗 [Ver discusión]({discussion_url})"
     send_to_discord(message, data)
 
 
@@ -311,7 +312,7 @@ def handle_discussion_comment_event(data):
     comment_url = data['comment']['html_url']
     discussion_title = data['discussion']['title']
     repo_name = data['repository']['full_name']
-    message = f"Comentario en la discusión '{discussion_title}' fue {action}: {comment_url} en {repo_name}"
+    message = f"💬 **Comentario en discusión** '{discussion_title}' fue **{action}** en **{repo_name}**.\n🔗 [Ver comentario]({comment_url})"
     send_to_discord(message, data)
 
 
@@ -319,7 +320,7 @@ def handle_merge_group_event(data):
     action = data['action']
     merge_group_url = data['merge_group']['html_url']
     repo_name = data['repository']['full_name']
-    message = f"Merge group fue {action}: {merge_group_url} en {repo_name}"
+    message = f"🔀 **Merge group** fue **{action}** en **{repo_name}**.\n🔗 [Ver merge group]({merge_group_url})"
     send_to_discord(message, data)
 
 
@@ -327,7 +328,7 @@ def handle_package_event(data):
     action = data['action']
     package_name = data['package']['name']
     repo_name = data['repository']['full_name']
-    message = f"Paquete '{package_name}' fue {action} en {repo_name}"
+    message = f"📦 **Paquete** '{package_name}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -335,7 +336,7 @@ def handle_page_build_event(data):
     build_status = data['build']['status']
     build_url = data['build']['html_url']
     repo_name = data['repository']['full_name']
-    message = f"Page build status: {build_status}: {build_url} en {repo_name}"
+    message = f"🛠️ **Page build** status: **{build_status}** en **{repo_name}**.\n🔗 [Ver build]({build_url})"
     send_to_discord(message, data)
 
 
@@ -343,7 +344,7 @@ def handle_project_event(data):
     action = data['action']
     project_name = data['project']['name']
     repo_name = data['repository']['full_name']
-    message = f"Proyecto '{project_name}' fue {action} en {repo_name}"
+    message = f"📈 **Proyecto** '{project_name}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -351,7 +352,7 @@ def handle_project_card_event(data):
     action = data['action']
     card_note = data['project_card']['note']
     repo_name = data['repository']['full_name']
-    message = f"Tarjeta de proyecto fue {action}: '{card_note}' en {repo_name}"
+    message = f"🃏 **Tarjeta de proyecto** fue **{action}** en **{repo_name}**.\n📋 Nota: '{card_note}'"
     send_to_discord(message, data)
 
 
@@ -359,7 +360,7 @@ def handle_project_column_event(data):
     action = data['action']
     column_name = data['project_column']['name']
     repo_name = data['repository']['full_name']
-    message = f"Columna de proyecto '{column_name}' fue {action} en {repo_name}"
+    message = f"📊 **Columna de proyecto** '{column_name}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -367,7 +368,7 @@ def handle_registry_package_event(data):
     action = data['action']
     package_name = data['package']['name']
     repo_name = data['repository']['full_name']
-    message = f"Paquete de registro '{package_name}' fue {action} en {repo_name}"
+    message = f"📦 **Paquete de registro** '{package_name}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -375,14 +376,14 @@ def handle_repository_advisory_event(data):
     action = data['action']
     advisory_title = data['advisory']['title']
     repo_name = data['repository']['full_name']
-    message = f"Asesoría '{advisory_title}' fue {action} en {repo_name}"
+    message = f"📢 **Asesoría** '{advisory_title}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
 def handle_repository_import_event(data):
     action = data['action']
     repo_name = data['repository']['full_name']
-    message = f"Importación de repositorio fue {action} en {repo_name}"
+    message = f"🔄 **Importación de repositorio** fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -390,7 +391,7 @@ def handle_repository_ruleset_event(data):
     action = data['action']
     ruleset_name = data['ruleset']['name']
     repo_name = data['repository']['full_name']
-    message = f"Conjunto de reglas '{ruleset_name}' fue {action} en {repo_name}"
+    message = f"⚙️ **Conjunto de reglas** '{ruleset_name}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -398,7 +399,7 @@ def handle_repository_vulnerability_alert_event(data):
     action = data['action']
     alert_title = data['alert']['security_advisory']['summary']
     repo_name = data['repository']['full_name']
-    message = f"Alerta de vulnerabilidad '{alert_title}' fue {action} en {repo_name}"
+    message = f"🚨 **Alerta de vulnerabilidad** '{alert_title}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -406,7 +407,7 @@ def handle_secret_scanning_alert_event(data):
     action = data['action']
     alert_title = data['alert']['secret_type']
     repo_name = data['repository']['full_name']
-    message = f"Alerta de escaneo de secretos '{alert_title}' fue {action} en {repo_name}"
+    message = f"🔍 **Alerta de escaneo de secretos** '{alert_title}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -414,14 +415,14 @@ def handle_secret_scanning_alert_location_event(data):
     action = data['action']
     alert_location = data['location']['path']
     repo_name = data['repository']['full_name']
-    message = f"Alerta de escaneo de secretos en la ubicación '{alert_location}' fue {action} en {repo_name}"
+    message = f"🔍 **Alerta de escaneo de secretos** en la ubicación '{alert_location}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
 def handle_security_and_analyses_event(data):
     action = data['action']
     repo_name = data['repository']['full_name']
-    message = f"Seguridad y análisis fue {action} en {repo_name}"
+    message = f"🔐 **Seguridad y análisis** fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -430,22 +431,23 @@ def handle_status_event(data):
     commit_sha = data['sha']
     target_url = data['target_url']
     repo_name = data['repository']['full_name']
-    message = f"Estado del commit {commit_sha} cambió a {state}: {target_url} en {repo_name}"
+    message = f"📊 **Estado del commit** {commit_sha} cambió a **{state}** en **{repo_name}**.\n🔗 [Ver estado]({target_url})"
     send_to_discord(message, data)
+
 
 
 def handle_team_add_event(data):
     action = data['action']
     team_name = data['team']['name']
     repo_name = data['repository']['full_name']
-    message = f"Equipo '{team_name}' fue {action} en {repo_name}"
+    message = f"👥 **Equipo** '{team_name}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
 def handle_visibility_change_event(data):
     action = data['action']
     repo_name = data['repository']['full_name']
-    message = f"Visibilidad del repositorio {repo_name} fue {action}"
+    message = f"👁️ **Visibilidad** del repositorio **{repo_name}** fue **{action}**."
     send_to_discord(message, data)
 
 
@@ -469,7 +471,7 @@ def handle_wiki_event(data):
     page_title = data['page']['title']
     page_url = data['page']['html_url']
     repo_name = data['repository']['full_name']
-    message = f"Página wiki '{page_title}' fue {action}: {page_url} en {repo_name}"
+    message = f"📚 **Página wiki** '{page_title}' fue **{action}** en **{repo_name}**.\n🔗 [Ver página]({page_url})"
     send_to_discord(message, data)
 
 
@@ -477,7 +479,7 @@ def handle_workflow_job_event(data):
     action = data['action']
     workflow_job_name = data['workflow_job']['name']
     repo_name = data['repository']['full_name']
-    message = f"Trabajo del workflow '{workflow_job_name}' fue {action} en {repo_name}"
+    message = f"🛠️ **Trabajo del workflow** '{workflow_job_name}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -485,7 +487,7 @@ def handle_workflow_run_event(data):
     action = data['action']
     workflow_name = data['workflow_run']['name']
     repo_name = data['repository']['full_name']
-    message = f"Ejecutando workflow '{workflow_name}' fue {action} en {repo_name}"
+    message = f"🚀 **Ejecución de workflow** '{workflow_name}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -493,7 +495,7 @@ def handle_branch_or_tag_creation_event(data):
     ref_type = data['ref_type']
     ref_name = data['ref']
     repo_name = data['repository']['full_name']
-    message = f"Nuevo {ref_type} creado: {ref_name} en {repo_name}"
+    message = f"🌱 **Nuevo {ref_type}** creado: {ref_name} en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -501,14 +503,14 @@ def handle_branch_or_tag_deletion_event(data):
     ref_type = data['ref_type']
     ref_name = data['ref']
     repo_name = data['repository']['full_name']
-    message = f"{ref_type.capitalize()} eliminado: {ref_name} en {repo_name}"
+    message = f"🗑️ **{ref_type.capitalize()} eliminado**: {ref_name} en **{repo_name}**."
     send_to_discord(message, data)
 
 
 def handle_branch_protection_configurations_event(data):
     action = data['action']
     repo_name = data['repository']['full_name']
-    message = f"Configuraciones de protección de rama {action} en {repo_name}"
+    message = f"🛡️ **Configuraciones de protección de rama** {action} en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -516,7 +518,7 @@ def handle_bypass_push_rulesets_event(data):
     action = data['action']
     rule_name = data.get('rule_name', 'desconocida')
     repo_name = data['repository']['full_name']
-    message = f"Solicitud de bypass para la regla de push '{rule_name}' fue {action} en {repo_name}"
+    message = f"🚧 **Solicitud de bypass** para la regla de push '{rule_name}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -524,7 +526,7 @@ def handle_bypass_secret_scanning_event(data):
     action = data['action']
     rule_name = data.get('rule_name', 'desconocida')
     repo_name = data['repository']['full_name']
-    message = f"Solicitud de bypass para la protección de escaneo de secretos '{rule_name}' fue {action} en {repo_name}"
+    message = f"🚧 **Solicitud de bypass** para la protección de escaneo de secretos '{rule_name}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
@@ -532,7 +534,7 @@ def handle_label_event(data):
     action = data['action']
     label_name = data['label']['name']
     repo_name = data['repository']['full_name']
-    message = f"Etiqueta '{label_name}' fue {action} en {repo_name}"
+    message = f"🏷️ **Etiqueta** '{label_name}' fue **{action}** en **{repo_name}**."
     send_to_discord(message, data)
 
 
