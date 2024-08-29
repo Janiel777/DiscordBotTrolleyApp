@@ -7,4 +7,6 @@ git push heroku main
 
 Si el bot no esta activo con este comando se puede poner a trabajar:
 heroku ps:scale worker=1
+heroku ps:scale web=1
+
 
