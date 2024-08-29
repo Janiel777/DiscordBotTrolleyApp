@@ -121,15 +121,15 @@ def github_webhook():
 
 def send_to_discord(message, data=None):
     channel = bot.get_channel(1278517612292210789)  # Reemplaza con el ID de tu canal
-    if data:
-        # Convertir el diccionario a un string JSON
-        json_bytes = json.dumps(data, indent=4, ensure_ascii=False).encode('utf-8')
-        json_file = File(io.BytesIO(json_bytes), filename="data.json")
-        # Enviar mensaje personalizado con el archivo adjunto
-        message = f"{message}\nEl JSON completo está adjunto."
-        bot.loop.create_task(channel.send(message, file=json_file))
-    else:
-        bot.loop.create_task(channel.send(message))
+    # if data:
+    #     # Convertir el diccionario a un string JSON
+    #     json_bytes = json.dumps(data, indent=4, ensure_ascii=False).encode('utf-8')
+    #     json_file = File(io.BytesIO(json_bytes), filename="data.json")
+    #     # Enviar mensaje personalizado con el archivo adjunto
+    #     message = f"{message}\nEl JSON completo está adjunto."
+    #     bot.loop.create_task(channel.send(message, file=json_file))
+    # else:
+    bot.loop.create_task(channel.send(message))
 
 
 # Aquí están todos los manejadores de eventos
