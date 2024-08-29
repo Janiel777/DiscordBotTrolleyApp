@@ -452,7 +452,15 @@ def handle_visibility_change_event(data):
 def handle_watch_event(data):
     action = data['action']
     repo_name = data['repository']['full_name']
-    message = f"Usuario hizo {action} en el repo {repo_name}"
+    user = data['sender']['login']
+    repo_url = data['repository']['html_url']
+    user_url = data['sender']['html_url']
+
+    if action == "started":
+        message = f"👀 **{user}** ha comenzado a seguir el repositorio [{repo_name}]({repo_url}). ¡Descubre qué hay de interesante [aquí]({user_url})!"
+    elif action == "deleted":
+        message = f"❌ **{user}** ha dejado de seguir el repositorio [{repo_name}]({repo_url}). ¡Visita su perfil [aquí]({user_url}) para más detalles!"
+
     send_to_discord(message, data)
 
 
