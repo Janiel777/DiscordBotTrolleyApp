@@ -125,11 +125,13 @@ def send_to_discord(message):
 # Aquí están todos los manejadores de eventos
 def handle_push_event(data):
     pusher = data['pusher']['name']
+    branch = data['ref'].split('/')[-1]
     commit_message = data['head_commit']['message']
     commit_url = data['head_commit']['url']
     repo_name = data['repository']['full_name']
-    message = f"Nuevo push en {repo_name} por {pusher}: [{commit_message}]({commit_url})"
+    message = f"Nuevo push en {repo_name} por {pusher} en la rama '{branch}': [{commit_message}]({commit_url})"
     send_to_discord(message)
+
 
 
 def handle_issue_event(data):
