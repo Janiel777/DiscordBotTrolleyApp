@@ -118,7 +118,7 @@ def github_webhook():
 
 
 def send_to_discord(message):
-    channel = bot.get_channel(1278770255711309906)  # Reemplaza con el ID de tu canal
+    channel = bot.get_channel(1278517612292210789)  # Reemplaza con el ID de tu canal
     bot.loop.create_task(channel.send(message))
 
 
@@ -130,7 +130,7 @@ def handle_push_event(data):
     commit_url = data['head_commit']['url']
     repo_name = data['repository']['full_name']
     message = f"Nuevo push en {repo_name} por {pusher} en la rama '{branch}': [{commit_message}]({commit_url})"
-    send_to_discord(message)
+    send_to_discord("@everyone " + message)
 
 
 
@@ -149,7 +149,7 @@ def handle_issue_comment_event(data):
     issue_title = data['issue']['title']
     repo_name = data['repository']['full_name']
     message = f"Comentario en el issue '{issue_title}' fue {action}: {comment_url} en {repo_name}"
-    send_to_discord(message)
+    send_to_discord("@everyone " + message)
 
 
 def handle_pull_request_event(data):
@@ -158,7 +158,7 @@ def handle_pull_request_event(data):
     pr_url = data['pull_request']['html_url']
     repo_name = data['repository']['full_name']
     message = f"Pull request '{pr_title}' fue {action}: {pr_url} en {repo_name}"
-    send_to_discord(message)
+    send_to_discord("@everyone " + message)
 
 
 def handle_pull_request_review_event(data):
@@ -191,7 +191,7 @@ def handle_fork_event(data):
     forkee_full_name = data['forkee']['full_name']
     forkee_url = data['forkee']['html_url']
     repo_name = data['repository']['full_name']
-    message = f"Repositorio {repo_name} fue forkeado: [{forkee_full_name}]({forkee_url})"
+    message = f"Repositorio {repo_name} fue forked: [{forkee_full_name}]({forkee_url})"
     send_to_discord(message)
 
 
@@ -205,7 +205,7 @@ def handle_star_event(data):
 def handle_repository_event(data):
     action = data['action']
     repo_name = data['repository']['full_name']
-    message = f"Repositorio {repo_name} fue {action}"
+    message = f"@everyone Repositorio {repo_name} fue {action}"
     send_to_discord(message)
 
 
@@ -220,7 +220,7 @@ def handle_milestone_event(data):
     action = data['action']
     milestone_title = data['milestone']['title']
     repo_name = data['repository']['full_name']
-    message = f"Hito '{milestone_title}' fue {action} en {repo_name}"
+    message = f"@everyone Hito '{milestone_title}' fue {action} en {repo_name}"
     send_to_discord(message)
 
 
@@ -229,7 +229,7 @@ def handle_commit_comment_event(data):
     comment_url = data['comment']['html_url']
     commit_id = data['comment']['commit_id']
     repo_name = data['repository']['full_name']
-    message = f"Comentario en commit {commit_id} fue {action}: {comment_url} en {repo_name}"
+    message = f"@everyone Comentario en commit {commit_id} fue {action}: {comment_url} en {repo_name}"
     send_to_discord(message)
 
 
@@ -285,7 +285,7 @@ def handle_discussion_event(data):
     discussion_title = data['discussion']['title']
     discussion_url = data['discussion']['html_url']
     repo_name = data['repository']['full_name']
-    message = f"Discusión '{discussion_title}' fue {action}: {discussion_url} en {repo_name}"
+    message = f"@everyone Discusión '{discussion_title}' fue {action}: {discussion_url} en {repo_name}"
     send_to_discord(message)
 
 
