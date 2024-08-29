@@ -118,7 +118,7 @@ def github_webhook():
 
 
 def send_to_discord(message):
-    channel = bot.get_channel(1278517612292210789)  # Reemplaza con el ID de tu canal
+    channel = bot.get_channel(1278770255711309906)  # Reemplaza con el ID de tu canal
     bot.loop.create_task(channel.send(message))
 
 
