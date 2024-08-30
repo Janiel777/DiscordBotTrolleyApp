@@ -5,11 +5,20 @@ from discord.ext import commands
 from flask import Flask, request, json
 from threading import Thread
 from discord import File
+import requests
 
 app = Flask(__name__)
 
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 GITHUB_SECRET = os.getenv('GITHUB_SECRET')
+GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
+
+REPO_OWNER = 'uprm-inso4116-2024-2025-s1'  # Propietario del repositorio
+REPO_NAME = 'semester-project-trolley-tracker-app'  # Nombre del repositorio
+DISCUSSION_NUMBER = 5  # Número de la discusión
+
+
+TEAM1_DISCORD_CHANNEL_ID = 1278505988579659806
 
 bot = commands.Bot(command_prefix="!")
 
@@ -603,6 +612,43 @@ async def notificaciones(ctx):
     server_url = "https://discord-bot-trolley-app-7cf3be57fb8b.herokuapp.com/"  # Reemplaza con la URL real de tu servidor
     message = f"Puedes ver todas las notificaciones que manejo en la siguiente URL: {server_url}"
     await ctx.send(message)
+
+
+# Escuchar mensajes en el canal de Discord
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return  # Evita que el bot responda a sí mismo
+
+    # Publicar el mensaje en la discusión de GitHub
+    if message.channel.id == TEAM1_DISCORD_CHANNEL_ID:
+        send_to_github_discussion(message.content, message.author)
+
+    # Procesar otros comandos del bot si es necesario
+    await bot.process_commands(message)
+
+
+def send_to_github_discussion(content, author):
+    url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/discussions/{DISCUSSION_NUMBER}/comments"
+
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    # Incluye el nombre del autor en el mensaje
+    message_body = f"**{author}** dijo:\n\n{content}"
+
+    data = {
+        "body": message_body
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+
+    if response.status_code == 201:
+        print("Mensaje enviado a la discusión de GitHub")
+    else:
+        print(f"Error al enviar mensaje: {response.status_code} - {response.text}")
 
 @bot.event
 async def on_ready():
