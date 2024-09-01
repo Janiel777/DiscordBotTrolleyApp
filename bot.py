@@ -15,10 +15,6 @@ GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
 
 ORG_NAME = 'uprm-inso4116-2024-2025-s1'  # Propietario del repositorio
 REPO_NAME = 'semester-project-trolley-tracker-app'  # Nombre del repositorio
-DISCUSSION_NUMBER = 5  # Número de la discusión
-
-
-TEAM1_DISCORD_CHANNEL_ID = 1278505988579659806
 
 bot = commands.Bot(command_prefix="!")
 
@@ -614,46 +610,12 @@ async def notificaciones(ctx):
     await ctx.send(message)
 
 
-# Escuchar mensajes en el canal de Discord
-@bot.event
-async def on_message(message):
-    if message.author == bot.user:
-        return  # Evita que el bot responda a sí mismo
 
-    # Publicar el mensaje en la discusión de GitHub
-    if message.channel.id == TEAM1_DISCORD_CHANNEL_ID:
-        send_to_github_discussion(message.content, message.author)
-
-    # Procesar otros comandos del bot si es necesario
-    await bot.process_commands(message)
-
-
-def send_to_github_discussion(content, author):
-    url = f"https://api.github.com/teams/10816710/discussions/5/comments"
-
-
-    headers = {
-        "Authorization": f"Bearer {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28"
-    }
-
-    data = {
-        "body": content
-    }
-
-    response = requests.post(url, headers=headers, json=data)
-
-    if response.status_code == 201:  # 201 is the expected success status code for a POST request
-        print("Comment posted successfully.")
-        print(response.json())
-    else:
-        print(f"Error posting comment: {response.status_code} - {response.text}")
 
 @bot.event
 async def on_ready():
     print(f'{bot.user} está conectado a Discord!')
-    send_to_github_discussion("Prueba de mensaje", "TestUser")
+
 
 
 if __name__ == "__main__":
