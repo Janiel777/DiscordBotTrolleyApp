@@ -636,13 +636,17 @@ def send_to_github_discussion(content, author):
         "Accept": "application/vnd.github.v3+json"
     }
 
-    response = requests.get(url, headers=headers)
+    data = {
+        "body": content
+    }
 
-    if response.status_code == 200:
-        print("Equipos en la organización obtenidos con éxito.")
+    response = requests.post(url, headers=headers, json=data)
+
+    if response.status_code == 201:
+        print("Comentario publicado con éxito.")
         print(response.json())
     else:
-        print(f"Error al intentar obtener equipos: {response.status_code} - {response.text}")
+        print(f"Error al intentar publicar comentario: {response.status_code} - {response.text}")
 
 @bot.event
 async def on_ready():
