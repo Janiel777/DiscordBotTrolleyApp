@@ -629,16 +629,21 @@ async def on_message(message):
 
 
 def send_to_github_discussion(content, author):
-    url = f"https://api.github.com/repos/uprm-inso4116-2024-2025-s1/semester-project-trolley-tracker-app/discussions/5/timeline"
+    url = f"https://api.github.com/repos/uprm-inso4116-2024-2025-s1/semester-project-trolley-tracker-app/discussions/5/comments"
 
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json"
+        "Accept": "application/vnd.github+json"
     }
 
-    response = requests.get(url, headers=headers)
+    # Cuerpo de la solicitud, que es el comentario que deseas agregar
+    data = {
+        "body": f"{author} dice: {content}"
+    }
 
-    if response.status_code == 200:
+    response = requests.post(url, headers=headers, json=data)
+
+    if response.status_code == 201:
         print("Equipos en la organización obtenidos con éxito.")
         print(response.json())
     else:
