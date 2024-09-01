@@ -629,25 +629,24 @@ async def on_message(message):
 
 
 def send_to_github_discussion(content, author):
-    url = f"https://api.github.com/repos/uprm-inso4116-2024-2025-s1/semester-project-trolley-tracker-app/discussions/5/comments"
+    url = f"https://api.github.com/orgs/uprm-inso4116-2024-2025-s1/teams/trolley-tracker-app/discussions/5/comments"
 
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
         "Accept": "application/vnd.github+json"
     }
 
-    # Cuerpo de la solicitud, que es el comentario que deseas agregar
     data = {
-        "body": f"{author} dice: {content}"
+        "body": content
     }
 
     response = requests.post(url, headers=headers, json=data)
 
-    if response.status_code == 201:
-        print("Equipos en la organización obtenidos con éxito.")
+    if response.status_code == 201:  # 201 is the expected success status code for a POST request
+        print("Comment posted successfully.")
         print(response.json())
     else:
-        print(f"Error al intentar obtener equipos: {response.status_code} - {response.text}")
+        print(f"Error posting comment: {response.status_code} - {response.text}")
 
 @bot.event
 async def on_ready():
