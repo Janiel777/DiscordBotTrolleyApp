@@ -629,7 +629,8 @@ async def on_message(message):
 
 
 def send_to_github_discussion(content, author):
-    url = f"https://api.github.com/teams/{10816710}/discussions/5/comments"
+    url = f"https://api.github.com/repos/uprm-inso4116-2024-2025-s1/semester-project-trolley-tracker-app/discussions/5/comments"
+
 
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
