@@ -629,24 +629,20 @@ async def on_message(message):
 
 
 def send_to_github_discussion(content, author):
-    url = f"https://api.github.com/repos/uprm-inso4116-2024-2025-s1/semester-project-trolley-tracker-app/discussions/5/comments"
+    url = f"https://api.github.com/repos/uprm-inso4116-2024-2025-s1/semester-project-trolley-tracker-app/discussions/5"
 
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
         "Accept": "application/vnd.github.v3+json"
     }
 
-    data = {
-        "body": content
-    }
+    response = requests.get(url, headers=headers)
 
-    response = requests.post(url, headers=headers, json=data)
-
-    if response.status_code == 201:
-        print("Comentario publicado con éxito.")
+    if response.status_code == 200:
+        print("Equipos en la organización obtenidos con éxito.")
         print(response.json())
     else:
-        print(f"Error al intentar publicar comentario: {response.status_code} - {response.text}")
+        print(f"Error al intentar obtener equipos: {response.status_code} - {response.text}")
 
 @bot.event
 async def on_ready():
