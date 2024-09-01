@@ -636,19 +636,13 @@ def send_to_github_discussion(content, author):
         "Accept": "application/vnd.github.v3+json"
     }
 
-    # Incluye el nombre del autor en el mensaje
-    message_body = f"**{author}** dijo:\n\n{content}"
+    response = requests.get(url, headers=headers)
 
-    data = {
-        "body": message_body
-    }
-
-    response = requests.post(url, headers=headers, json=data)
-
-    if response.status_code == 201:
-        print("Mensaje enviado a la discusión de GitHub con éxito")
+    if response.status_code == 200:
+        print("Equipos en la organización obtenidos con éxito.")
+        print(response.json())
     else:
-        print(f"Error al enviar mensaje: {response.status_code} - {response.text}")
+        print(f"Error al intentar obtener equipos: {response.status_code} - {response.text}")
 
 @bot.event
 async def on_ready():
