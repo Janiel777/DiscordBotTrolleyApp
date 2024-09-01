@@ -629,7 +629,7 @@ async def on_message(message):
 
 
 def send_to_github_discussion(content, author):
-    url = f"https://api.github.com/orgs/{ORG_NAME}/teams/10816710/discussions/{DISCUSSION_NUMBER}/comments"
+    url = f"https://api.github.com/orgs/{ORG_NAME}/teams/10816710"
 
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
