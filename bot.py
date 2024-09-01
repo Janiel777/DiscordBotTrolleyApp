@@ -633,7 +633,7 @@ def send_to_github_discussion(content, author):
 
 
     headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
+        "Authorization": f"Bearer {GITHUB_TOKEN}",
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28"
     }
