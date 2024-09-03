@@ -6,6 +6,8 @@ from flask import Flask, request, json
 from threading import Thread
 from discord import File
 import requests
+import pandas as pd
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -15,6 +17,9 @@ GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
 
 ORG_NAME = 'uprm-inso4116-2024-2025-s1'  # Propietario del repositorio
 REPO_NAME = 'semester-project-trolley-tracker-app'  # Nombre del repositorio
+
+attendance = {}
+tracking = False
 
 bot = commands.Bot(command_prefix="!")
 
@@ -610,6 +615,57 @@ async def notificaciones(ctx):
     await ctx.send(message)
 
 
+@bot.command()
+async def startattendance(ctx):
+    global tracking
+    if ctx.author.voice is None or ctx.author.voice.channel is None:
+        await ctx.send("¡Debes estar en un canal de voz para iniciar la asistencia!")
+        return
+
+    tracking = True
+    voice_channel = ctx.author.voice.channel
+
+    for member in voice_channel.members:
+        if member.id not in attendance:  # Solo agregar si no está ya registrado
+            attendance[member.id] = {"join": datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+    await ctx.send(f"Attendance tracking started for channel: {voice_channel.name}!")
+
+
+@bot.command()
+async def endattendance(ctx):
+    global tracking
+    tracking = False
+    await ctx.send("Attendance tracking ended! Generating report...")
+
+    # Convertir los datos a un DataFrame de pandas
+    attendance_data = []
+    for user_id, times in attendance.items():
+        member = ctx.guild.get_member(user_id)
+        attendance_data.append({
+            "User": member.name,
+            "Time Joined": times.get("join"),
+            "Time Left": times.get("leave", "Still here")
+        })
+
+    df = pd.DataFrame(attendance_data)
+
+    # Guardar el DataFrame como un archivo Excel
+    filename = f"Attendance_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    df.to_excel(filename, index=False)
+
+    await ctx.send(f"Attendance report generated: {filename}")
+    attendance.clear()
+
+
+@bot.event
+async def on_voice_state_update(member, before, after):
+    if tracking:
+        if not before.channel and after.channel:  # Usuario se une al canal
+            attendance[member.id] = {"join": datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        elif before.channel and not after.channel:  # Usuario sale del canal
+            if member.id in attendance:
+                attendance[member.id]["leave"] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
 @bot.event
