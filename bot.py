@@ -648,7 +648,10 @@ async def endattendance(ctx):
     with open(filename, 'w') as f:
         f.writelines(report_lines)
 
-    await ctx.send(f"¡Reporte de asistencia generado! {filename}")
+    # Enviar el archivo al canal de Discord
+    with open(filename, 'rb') as f:
+        await ctx.send("Aquí está el reporte de asistencia:", file=discord.File(f, filename))
+
     attendance.clear()
 
 
