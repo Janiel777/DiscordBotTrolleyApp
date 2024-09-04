@@ -623,10 +623,12 @@ async def startattendance(ctx):
 
     tracking = True
     voice_channel = ctx.author.voice.channel
+    print(f"Iniciando seguimiento de asistencia en el canal: {voice_channel.name}")
 
     for member in voice_channel.members:
         if member.id not in attendance:  # Solo agregar si no está ya registrado
             attendance[member.id] = {"join": datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+            print(f"Registrado {member.name} con hora de entrada {attendance[member.id]['join']}")
 
     await ctx.send(f"¡Seguimiento de asistencia iniciado en el canal: {voice_channel.name}!")
 
@@ -639,20 +641,26 @@ async def endattendance(ctx):
 
     # Generar el reporte en formato de texto
     report_lines = ["Reporte de Asistencia:\n"]
+    print("Generando reporte de asistencia...")
     for user_id, times in attendance.items():
         member = ctx.guild.get_member(user_id)
         report_lines.append(f"Usuario: {member.name}\nHora de Entrada: {times.get('join')}\nHora de Salida: {times.get('leave', 'Aún presente')}\n")
+        print(f"Usuario {member.name} - Entrada: {times.get('join')} - Salida: {times.get('leave', 'Aún presente')}")
 
     # Guardar el reporte en un archivo de texto
     filename = f"Attendance_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
     with open(filename, 'w') as f:
         f.writelines(report_lines)
 
+    print(f"Reporte guardado como {filename}")
+
     # Enviar el archivo al canal de Discord
     with open(filename, 'rb') as f:
         await ctx.send("Aquí está el reporte de asistencia:", file=discord.File(f, filename))
 
+    print(f"Reporte enviado al canal de Discord {ctx.channel.name}")
     attendance.clear()
+    print("Registro de asistencia limpiado.")
 
 
 @bot.event
@@ -660,9 +668,12 @@ async def on_voice_state_update(member, before, after):
     if tracking:
         if not before.channel and after.channel:  # Usuario se une al canal
             attendance[member.id] = {"join": datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+            print(f"{member.name} se unió al canal {after.channel.name} a las {attendance[member.id]['join']}")
         elif before.channel and not after.channel:  # Usuario sale del canal
             if member.id in attendance:
                 attendance[member.id]["leave"] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                print(f"{member.name} salió del canal {before.channel.name} a las {attendance[member.id]['leave']}")
+
 
 
 @bot.event
