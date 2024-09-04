@@ -6,7 +6,6 @@ from flask import Flask, request, json
 from threading import Thread
 from discord import File
 import requests
-import pandas as pd
 from datetime import datetime
 
 app = Flask(__name__)
@@ -629,32 +628,27 @@ async def startattendance(ctx):
         if member.id not in attendance:  # Solo agregar si no está ya registrado
             attendance[member.id] = {"join": datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
-    await ctx.send(f"Attendance tracking started for channel: {voice_channel.name}!")
+    await ctx.send(f"¡Seguimiento de asistencia iniciado en el canal: {voice_channel.name}!")
 
 
 @bot.command()
 async def endattendance(ctx):
     global tracking
     tracking = False
-    await ctx.send("Attendance tracking ended! Generating report...")
+    await ctx.send("¡Seguimiento de asistencia finalizado! Generando reporte...")
 
-    # Convertir los datos a un DataFrame de pandas
-    attendance_data = []
+    # Generar el reporte en formato de texto
+    report_lines = ["Reporte de Asistencia:\n"]
     for user_id, times in attendance.items():
         member = ctx.guild.get_member(user_id)
-        attendance_data.append({
-            "User": member.name,
-            "Time Joined": times.get("join"),
-            "Time Left": times.get("leave", "Still here")
-        })
+        report_lines.append(f"Usuario: {member.name}\nHora de Entrada: {times.get('join')}\nHora de Salida: {times.get('leave', 'Aún presente')}\n")
 
-    df = pd.DataFrame(attendance_data)
+    # Guardar el reporte en un archivo de texto
+    filename = f"Attendance_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+    with open(filename, 'w') as f:
+        f.writelines(report_lines)
 
-    # Guardar el DataFrame como un archivo Excel
-    filename = f"Attendance_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-    df.to_excel(filename, index=False)
-
-    await ctx.send(f"Attendance report generated: {filename}")
+    await ctx.send(f"¡Reporte de asistencia generado! {filename}")
     attendance.clear()
 
 
