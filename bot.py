@@ -47,6 +47,7 @@ def list_commands():
     urls_list = {
         "/notificaciones": "Muestra la página que lista las notificaciones manejadas por el bot con GitHub.",
         "/github-webhook": "Recibe eventos de GitHub y los procesa.",
+        "/documentos": "Muestra los documentos del proyecto"
     }
 
     # Generar un HTML con la lista de comandos y agregar la etiqueta de verificación
@@ -134,6 +135,47 @@ def index():
         "label"
     ]
     return "<h1>Notificaciones que maneja el bot</h1>" + "<ul>" + "".join(f"<li>{notification}</li>" for notification in notifications) + "</ul>"
+
+
+@app.route('/listadocumentos')
+def lista_documentos():
+    # Consulta a la base de datos para obtener todos los documentos
+    documentos = collection.find()
+
+    # Si no hay documentos, mostrar un mensaje
+    if collection.count_documents({}) == 0:
+        return "<h1>No hay documentos almacenados.</h1>"
+
+    # Generar un HTML con la lista de documentos
+    html = """
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lista de Documentos</title>
+    </head>
+    <body>
+        <h1>Documentos Almacenados</h1>
+        <ul>
+    """
+
+    # Agregar los documentos al HTML en forma de lista
+    for doc in documentos:
+        nombre = doc.get('nombre', 'Sin Nombre')
+        url = doc.get('url', '#')
+        html += f"<li><b>{nombre}</b>: <a href='{url}'>{url}</a></li>"
+
+    # Cerrar la lista y el cuerpo del HTML
+    html += """
+        </ul>
+    </body>
+    </html>
+    """
+
+    return html
+
+
 
 @app.route('/github-webhook', methods=['POST'])
 def github_webhook():
