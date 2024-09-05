@@ -754,6 +754,7 @@ async def deletedocument(ctx, nombre: str):
 # Este patrón captura el formato esperado: nombre del documento seguido por la URL
 document_pattern = re.compile(r"(.+):\s*(https?://\S+)")
 
+
 @bot.event
 async def on_message(message):
     # Evitar que el bot responda a sus propios mensajes
@@ -779,11 +780,24 @@ async def on_message(message):
                 if reply.content.lower() == 'y':
                     # Aquí se agrega el documento con el nombre y la URL completos
                     collection.insert_one({"nombre": document_name, "url": document_url})
-                    await message.channel.send(f"Documento '{document_name}' añadido con éxito.")
+                    confirmation = await message.channel.send(f"Documento '{document_name}' añadido con éxito.")
                 else:
-                    await message.channel.send("Operación cancelada.")
+                    confirmation = await message.channel.send("Operación cancelada.")
+
+                # Eliminar los mensajes después de un breve retraso
+                await asyncio.sleep(5)  # Esperar 5 segundos antes de borrar los mensajes
+                await message.delete()
+                await response.delete()
+                await reply.delete()
+                await confirmation.delete()
+
             except asyncio.TimeoutError:
-                await message.channel.send("Se agotó el tiempo de espera para la respuesta.")
+                timeout_message = await message.channel.send("Se agotó el tiempo de espera para la respuesta.")
+                await asyncio.sleep(5)
+                await message.delete()
+                await response.delete()
+                await timeout_message.delete()
+
     # Asegúrate de procesar otros comandos del bot
     await bot.process_commands(message)
 
