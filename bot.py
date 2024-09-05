@@ -697,7 +697,7 @@ async def newdocument(ctx, nombre: str, url: str):
 @bot.command(name='listdocuments')
 async def listdocuments(ctx):
     documentos = collection.find()
-    if documentos.count() == 0:
+    if collection.count_documents({}) == 0:
         await ctx.send("No hay documentos almacenados.")
     else:
         mensaje = "Documentos almacenados:\n"
