@@ -9,6 +9,7 @@ from discord import File
 import requests
 from datetime import datetime
 import pymongo
+import re
 
 app = Flask(__name__)
 
@@ -750,42 +751,35 @@ async def deletedocument(ctx, nombre: str):
         await ctx.send(f"No se encontró un documento con el nombre '{nombre}'.")
 
 
+# Este patrón captura el formato esperado: nombre del documento seguido por la URL
+document_pattern = re.compile(r"(.+):\s*(https?://\S+)")
+
 @bot.event
 async def on_message(message):
-    # Verificar que el mensaje proviene del canal 'resources'
-    if message.channel.name == 'resources':
-        # Verificar si el mensaje tiene el formato "nombre del archivo: url"
-        if ":" in message.content and "http" in message.content:
-            # Separar el nombre del archivo y la URL
-            partes = message.content.split(":")
-            nombre_documento = partes[0].strip()
-            url_documento = partes[1].strip()
+    if message.channel.name == 'resources':  # Verifica si el mensaje es del canal correcto
+        match = document_pattern.match(message.content)
+        if match:
+            document_name = match.group(1)
+            document_url = match.group(2)
 
-            # Preguntar al usuario si desea agregar el documento a la lista
-            confirm_message = await message.channel.send(f"{message.author.mention} ¿Quieres añadir el documento '{nombre_documento}' con la URL {url_documento} a la lista de documentos? Responde con 'y' para sí o 'n' para no.")
+            # Pregunta al usuario si quiere agregar el documento
+            response = await message.channel.send(
+                f"@{message.author} ¿Quieres añadir el documento '{document_name}' con la URL {document_url} a la lista de documentos? Responde con 'y' para sí o 'n' para no.")
 
-            # Esperar la respuesta del usuario
             def check(m):
-                return m.author == message.author and m.content.lower() in ['y', 'n']
+                return m.author == message.author and m.channel == message.channel and m.content.lower() in ['y', 'n']
 
+            # Espera la respuesta del usuario
             try:
-                respuesta = await bot.wait_for('message', timeout=30.0, check=check)
-            except asyncio.TimeoutError:
-                await message.channel.send(f"{message.author.mention} No respondiste a tiempo.")
-            else:
-                if respuesta.content.lower() == 'y':
-                    # Añadir el documento a la base de datos
-                    collection.insert_one({"nombre": nombre_documento, "url": url_documento})
-                    await message.channel.send(f"Documento '{nombre_documento}' añadido con éxito a la lista.")
-
-                    # Eliminar el mensaje original y la respuesta de confirmación
-                    await message.delete()
-                    await respuesta.delete()
+                reply = await bot.wait_for('message', check=check, timeout=30.0)
+                if reply.content.lower() == 'y':
+                    # Aquí se agrega el documento con el nombre y la URL completos
+                    collection.insert_one({"nombre": document_name, "url": document_url})
+                    await message.channel.send(f"Documento '{document_name}' añadido con éxito.")
                 else:
-                    await message.channel.send(f"El documento '{nombre_documento}' no se ha añadido.")
-
-    # Asegurarse de que otros comandos y eventos también se manejen correctamente
-    await bot.process_commands(message)
+                    await message.channel.send("Operación cancelada.")
+            except asyncio.TimeoutError:
+                await message.channel.send("Se agotó el tiempo de espera para la respuesta.")
 
 
 
