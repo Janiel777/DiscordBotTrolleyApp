@@ -809,7 +809,7 @@ async def on_message(message):
 def get_current_time():
     return datetime.now(LOCAL_TZ)
 
-# Comando para iniciar el registro de eventos de la reunión
+
 @bot.command(name="iniciar_reunion")
 async def iniciar_reunion(ctx):
     global reunion_activa, event_log, voice_channel_data, durations
