@@ -49,8 +49,21 @@ def list_commands():
         "/github-webhook": "Recibe eventos de GitHub y los procesa.",
     }
 
-    # Generar un HTML con la lista de comandos
-    html = "<h1>Comandos del bot</h1><ul>"
+    # Generar un HTML con la lista de comandos y agregar la etiqueta de verificación
+    html = """
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="google-site-verification" content="1gsxA927OlgR5l..."> <!-- Tu meta verificación aquí -->
+        <title>Comandos del bot</title>
+    </head>
+    <body>
+    <h1>Comandos del bot</h1>
+    <ul>
+    """
+
     for command, description in commands_list.items():
         html += f"<li><b>{command}</b>: {description}</li>"
     html += "</ul>"
@@ -58,12 +71,15 @@ def list_commands():
     # Generar una sección para las URLs adicionales del servidor
     html += "<h2>Otras URLs del servidor</h2><ul>"
     for url, description in urls_list.items():
-        # Usar la etiqueta <a> para hacer la URL clicable
         html += f'<li><b><a href="{url}">{url}</a></b>: {description}</li>'
     html += "</ul>"
 
-    return html
+    html += """
+    </body>
+    </html>
+    """
 
+    return html
 @app.route('/notificaciones')
 def index():
     # Lista de todas las notificaciones que maneja el bot
