@@ -780,6 +780,8 @@ async def on_message(message):
                     await message.channel.send("Operación cancelada.")
             except asyncio.TimeoutError:
                 await message.channel.send("Se agotó el tiempo de espera para la respuesta.")
+    # Asegúrate de procesar otros comandos del bot
+    await bot.process_commands(message)
 
 
 
