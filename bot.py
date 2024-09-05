@@ -756,6 +756,10 @@ document_pattern = re.compile(r"(.+):\s*(https?://\S+)")
 
 @bot.event
 async def on_message(message):
+    # Evitar que el bot responda a sus propios mensajes
+    if message.author == bot.user:
+        return
+
     if message.channel.name == 'resources':  # Verifica si el mensaje es del canal correcto
         match = document_pattern.match(message.content)
         if match:
