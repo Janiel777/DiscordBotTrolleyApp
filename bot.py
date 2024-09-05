@@ -647,7 +647,7 @@ def run_flask():
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
 
 
-@bot.command(name='help')
+@bot.command(name='ayuda')
 async def help(ctx):
     # Aquí defines la URL de tu servidor donde estarán listadas las notificaciones
     server_url = "https://discord-bot-trolley-app-7cf3be57fb8b.herokuapp.com/"  # Reemplaza con la URL real de tu servidor
