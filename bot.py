@@ -716,6 +716,7 @@ async def show_documents(ctx):
 @bot.event
 async def on_ready():
     print(f'{bot.user} está conectado a Discord!')
+    pass
 
 
 
