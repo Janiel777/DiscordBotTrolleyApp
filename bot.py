@@ -1,3 +1,4 @@
+import asyncio
 import io
 import os
 import discord
@@ -747,6 +748,44 @@ async def deletedocument(ctx, nombre: str):
         await ctx.send(f"Documento '{nombre}' eliminado con éxito.")
     else:
         await ctx.send(f"No se encontró un documento con el nombre '{nombre}'.")
+
+
+@bot.event
+async def on_message(message):
+    # Verificar que el mensaje proviene del canal 'resources'
+    if message.channel.name == 'resources':
+        # Verificar si el mensaje tiene el formato "nombre del archivo: url"
+        if ":" in message.content and "http" in message.content:
+            # Separar el nombre del archivo y la URL
+            partes = message.content.split(":")
+            nombre_documento = partes[0].strip()
+            url_documento = partes[1].strip()
+
+            # Preguntar al usuario si desea agregar el documento a la lista
+            confirm_message = await message.channel.send(f"{message.author.mention} ¿Quieres añadir el documento '{nombre_documento}' con la URL {url_documento} a la lista de documentos? Responde con 'y' para sí o 'n' para no.")
+
+            # Esperar la respuesta del usuario
+            def check(m):
+                return m.author == message.author and m.content.lower() in ['y', 'n']
+
+            try:
+                respuesta = await bot.wait_for('message', timeout=30.0, check=check)
+            except asyncio.TimeoutError:
+                await message.channel.send(f"{message.author.mention} No respondiste a tiempo.")
+            else:
+                if respuesta.content.lower() == 'y':
+                    # Añadir el documento a la base de datos
+                    collection.insert_one({"nombre": nombre_documento, "url": url_documento})
+                    await message.channel.send(f"Documento '{nombre_documento}' añadido con éxito a la lista.")
+
+                    # Eliminar el mensaje original y la respuesta de confirmación
+                    await message.delete()
+                    await respuesta.delete()
+                else:
+                    await message.channel.send(f"El documento '{nombre_documento}' no se ha añadido.")
+
+    # Asegurarse de que otros comandos y eventos también se manejen correctamente
+    await bot.process_commands(message)
 
 
 
