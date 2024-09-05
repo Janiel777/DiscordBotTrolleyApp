@@ -874,7 +874,7 @@ async def finalizar_reunion(ctx):
             # Calcular el tiempo que el usuario estuvo en el canal
             time_spent = get_current_time() - voice_channel_data.pop(member_id)
             durations[member_id] = durations.get(member_id, timedelta()) + time_spent
-            event_log += f"Tiempo total de {member.name}: {str(time_spent)}\n"
+            # event_log += f"Tiempo total de {member.name}: {str(time_spent)}\n"
 
         # Generar el resumen del tiempo que cada usuario estuvo en la reunión
         event_log += "\nResumen de la reunión:\n"
