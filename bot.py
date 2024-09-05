@@ -7,12 +7,14 @@ from threading import Thread
 from discord import File
 import requests
 from datetime import datetime
+import pymongo
 
 app = Flask(__name__)
 
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 GITHUB_SECRET = os.getenv('GITHUB_SECRET')
 GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
+MONGO_URI = os.getenv('MONGO_URI')
 
 ORG_NAME = 'uprm-inso4116-2024-2025-s1'  # Propietario del repositorio
 REPO_NAME = 'semester-project-trolley-tracker-app'  # Nombre del repositorio
@@ -20,11 +22,16 @@ REPO_NAME = 'semester-project-trolley-tracker-app'  # Nombre del repositorio
 # Archivo JSON donde se almacenarán los documentos
 DOCUMENTS_FILE = 'documents.json'
 
+# Seleccionar la base de datos y la colección
+
+
 attendance = {}
 tracking = False
 
 bot = commands.Bot(command_prefix="!")
-
+client = pymongo.MongoClient(MONGO_URI)
+db = client['trolleyAppDB']
+collection = db['documents']
 
 @app.route('/')
 def index():
@@ -679,37 +686,33 @@ async def on_voice_state_update(member, before, after):
 
 
 
-# Cargar documentos desde el archivo JSON
-def load_documents():
-    if not os.path.exists(DOCUMENTS_FILE):
-        return {}
-    with open(DOCUMENTS_FILE, 'r') as file:
-        return json.load(file)
-
-# Guardar documentos en el archivo JSON
-def save_documents(documents):
-    with open(DOCUMENTS_FILE, 'w') as file:
-        json.dump(documents, file, indent=4)
-
-# Inicializar los documentos
-documents = load_documents()
-
 # Comando para añadir un nuevo documento
-@bot.command(name='new-document-url')
-@commands.has_permissions(administrator=True)
-async def add_document(ctx, name: str, url: str):
-    documents[name] = url
-    save_documents(documents)
-    await ctx.send(f"El documento '{name}' ha sido agregado con éxito.")
+@bot.command(name='newdocument')
+async def newdocument(ctx, nombre: str, url: str):
+    # Insertar el documento en la base de datos
+    collection.insert_one({"nombre": nombre, "url": url})
+    await ctx.send(f"Documento '{nombre}' añadido con éxito.")
 
-# Comando para mostrar todos los documentos
-@bot.command(name='show-documents')
-async def show_documents(ctx):
-    if not documents:
-        await ctx.send("No hay documentos agregados.")
+# Comando para listar todos los documentos
+@bot.command(name='listdocuments')
+async def listdocuments(ctx):
+    documentos = collection.find()
+    if documentos.count() == 0:
+        await ctx.send("No hay documentos almacenados.")
     else:
-        doc_list = "\n".join([f"{name}: {url}" for name, url in documents.items()])
-        await ctx.send(f"Documentos disponibles:\n{doc_list}")
+        mensaje = "Documentos almacenados:\n"
+        for doc in documentos:
+            mensaje += f"**{doc['nombre']}**: {doc['url']}\n"
+        await ctx.send(mensaje)
+
+# Comando para eliminar un documento por su nombre
+@bot.command(name='deletedocument')
+async def deletedocument(ctx, nombre: str):
+    resultado = collection.delete_one({"nombre": nombre})
+    if resultado.deleted_count > 0:
+        await ctx.send(f"Documento '{nombre}' eliminado con éxito.")
+    else:
+        await ctx.send(f"No se encontró un documento con el nombre '{nombre}'.")
 
 
 
