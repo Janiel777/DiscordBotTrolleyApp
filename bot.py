@@ -809,15 +809,15 @@ async def on_message(message):
 def get_current_time():
     return datetime.now(LOCAL_TZ)
 
-
 @bot.command(name="iniciar_reunion")
 async def iniciar_reunion(ctx):
-    global reunion_activa, event_log, voice_channel_data, durations
+    global reunion_activa, event_log, voice_channel_data, durations, reunion_channel
     if not reunion_activa:
         reunion_activa = True
         event_log = "Reunión iniciada:\n"
         voice_channel_data = {}
         durations = {}
+        reunion_channel = ctx.channel  # Guardar el canal donde se inició la reunión
 
         # Verificar si el autor está en un canal de voz
         if ctx.author.voice and ctx.author.voice.channel:
@@ -848,43 +848,29 @@ async def iniciar_reunion(ctx):
 # Evento para registrar cuando un usuario entra o sale de un canal de voz
 @bot.event
 async def on_voice_state_update(member, before, after):
-    global event_log, voice_channel_data, durations, reunion_activa
+    global event_log, voice_channel_data, durations, reunion_activa, reunion_channel
 
-    if not reunion_activa:
-        return  # No hacer nada si la reunión no está activa
+    if not reunion_activa or reunion_channel is None:
+        return  # No hacer nada si la reunión no está activa o no hay canal registrado
 
     current_time = get_current_time().strftime('%H:%M:%S')
-
-    # Definir el canal al que se deben enviar los mensajes (canal del sistema o un canal predeterminado)
-    system_channel = member.guild.system_channel  # Canal del sistema
-    default_channel = discord.utils.get(member.guild.text_channels, name="hola")  # Cambia "general" por el nombre del canal que prefieras
-
-    # Si no hay canal del sistema, usa el canal predeterminado
-    target_channel = system_channel if system_channel else default_channel
-
-    if target_channel is None:
-        print("No se pudo encontrar un canal para enviar mensajes")
-        return  # No hay canal disponible para enviar mensajes
 
     # Si el usuario se une a un canal de voz
     if before.channel is None and after.channel is not None:
         event_log += f"{member.name} entró al canal de voz a las {current_time}\n"
-        await target_channel.send(f"{member.name} entró al canal de voz a las {current_time}")
+        await reunion_channel.send(f"{member.name} entró al canal de voz a las {current_time}")
         # Registrar el tiempo de entrada del usuario
         voice_channel_data[member.id] = get_current_time()
 
     # Si el usuario sale de un canal de voz
     elif before.channel is not None and after.channel is None:
         event_log += f"{member.name} salió del canal de voz a las {current_time}\n"
-        await target_channel.send(f"{member.name} salió del canal de voz a las {current_time}")
+        await reunion_channel.send(f"{member.name} salió del canal de voz a las {current_time}")
         # Calcular el tiempo que el usuario estuvo en el canal
         if member.id in voice_channel_data:
             time_spent = get_current_time() - voice_channel_data.pop(member.id)
             durations[member.id] = durations.get(member.id, timedelta()) + time_spent
             event_log += f"Tiempo total de {member.name}: {str(time_spent)}\n"
-
-    # Mensaje de depuración para asegurarnos de que la lógica se ejecuta correctamente
-    print(f"Evento procesado para {member.name} en {current_time}")
 
 # Comando para finalizar la reunión y generar el archivo de texto con el resumen
 @bot.command(name="finalizar_reunion")
