@@ -7,7 +7,7 @@ from flask import Flask, request, json
 from threading import Thread
 from discord import File
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 import pymongo
 import re
 
@@ -21,19 +21,21 @@ MONGO_URI = os.getenv('MONGO_URI')
 ORG_NAME = 'uprm-inso4116-2024-2025-s1'  # Propietario del repositorio
 REPO_NAME = 'semester-project-trolley-tracker-app'  # Nombre del repositorio
 
-# Archivo JSON donde se almacenarán los documentos
-DOCUMENTS_FILE = 'documents.json'
-
-# Seleccionar la base de datos y la colección
-
-
-attendance = {}
-tracking = False
 
 bot = commands.Bot(command_prefix="!")
 client = pymongo.MongoClient(MONGO_URI)
 db = client['trolleyAppDB']
 collection = db['documents']
+
+# Diccionario para almacenar el tiempo de entrada de cada usuario en un canal de voz
+voice_channel_data = {}
+# Diccionario para almacenar las duraciones de tiempo que cada usuario estuvo en el canal
+durations = {}
+
+# Cadena para registrar los eventos de la reunión
+event_log = ""
+# Variable para controlar si la reunión está activa
+reunion_activa = False
 
 
 @app.route('/')
@@ -798,6 +800,82 @@ async def on_message(message):
 
     # Asegúrate de procesar otros comandos del bot
     await bot.process_commands(message)
+
+
+# Comando para iniciar el registro de eventos de la reunión
+@bot.command(name="iniciar_reunion")
+async def iniciar_reunion(ctx):
+    global reunion_activa, event_log, voice_channel_data, durations
+    if not reunion_activa:
+        reunion_activa = True
+        event_log = "Reunión iniciada:\n"
+        voice_channel_data = {}
+        durations = {}
+
+        # Capturar a los usuarios que ya están en el canal de voz
+        if ctx.author.voice and ctx.author.voice.channel:  # Verificar si el autor está en un canal de voz
+            voice_channel = ctx.author.voice.channel
+            for member in voice_channel.members:
+                event_log += f"{member.name} ya estaba en el canal de voz a las {datetime.now().strftime('%H:%M:%S')}\n"
+                voice_channel_data[member.id] = datetime.now()  # Registrar la hora actual como su tiempo de entrada
+
+        await ctx.send("¡La reunión ha comenzado! Se empezarán a registrar los eventos.")
+    else:
+        await ctx.send("La reunión ya está activa.")
+
+
+# Evento para registrar cuando un usuario entra o sale de un canal de voz
+@bot.event
+async def on_voice_state_update(member, before, after):
+    global event_log, voice_channel_data, durations, reunion_activa
+
+    if not reunion_activa:
+        return  # No hacer nada si la reunión no está activa
+
+    # Si el usuario se une a un canal de voz
+    if before.channel is None and after.channel is not None:
+        event_log += f"{member.name} entró al canal de voz a las {datetime.now().strftime('%H:%M:%S')}\n"
+        # Registrar el tiempo de entrada del usuario
+        voice_channel_data[member.id] = datetime.now()
+
+    # Si el usuario sale de un canal de voz
+    elif before.channel is not None and after.channel is None:
+        event_log += f"{member.name} salió del canal de voz a las {datetime.now().strftime('%H:%M:%S')}\n"
+        # Calcular el tiempo que el usuario estuvo en el canal
+        if member.id in voice_channel_data:
+            time_spent = datetime.now() - voice_channel_data.pop(member.id)
+            durations[member.id] = durations.get(member.id, timedelta()) + time_spent
+            event_log += f"Tiempo total de {member.name}: {str(time_spent)}\n"
+
+
+# Comando para finalizar la reunión y generar el archivo de texto con el resumen
+@bot.command(name="finalizar_reunion")
+async def finalizar_reunion(ctx):
+    global event_log, durations, reunion_activa
+
+    if reunion_activa:
+        # Generar el resumen del tiempo que cada usuario estuvo en la reunión
+        event_log += "\nResumen de la reunión:\n"
+        for user_id, total_time in durations.items():
+            member = await ctx.guild.fetch_member(user_id)
+            event_log += f"{member.name} estuvo en el canal por {str(total_time)}\n"
+
+        # Guardar los eventos en un archivo de texto
+        with open("registro_reunion.txt", "w", encoding="utf-8") as f:
+            f.write(event_log)
+
+        # Enviar el archivo al canal donde se ejecutó el comando
+        await ctx.send("La reunión ha terminado. Aquí está el registro de eventos:",
+                       file=discord.File("registro_reunion.txt"))
+
+        # Reiniciar los registros para futuras reuniones
+        event_log = ""
+        voice_channel_data = {}
+        durations = {}
+        reunion_activa = False
+    else:
+        await ctx.send("No hay ninguna reunión activa.")
+
 
 
 
