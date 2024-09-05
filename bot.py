@@ -10,6 +10,7 @@ import requests
 from datetime import datetime, timedelta
 import pymongo
 import re
+import pytz  # Para manejo de zona horaria
 
 app = Flask(__name__)
 
@@ -36,6 +37,9 @@ durations = {}
 event_log = ""
 # Variable para controlar si la reunión está activa
 reunion_activa = False
+
+# Zona horaria de Puerto Rico
+LOCAL_TZ = pytz.timezone('America/Puerto_Rico')
 
 
 @app.route('/')
@@ -802,6 +806,9 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
+def get_current_time():
+    return datetime.now(LOCAL_TZ)
+
 # Comando para iniciar el registro de eventos de la reunión
 @bot.command(name="iniciar_reunion")
 async def iniciar_reunion(ctx):
@@ -816,13 +823,14 @@ async def iniciar_reunion(ctx):
         if ctx.author.voice and ctx.author.voice.channel:  # Verificar si el autor está en un canal de voz
             voice_channel = ctx.author.voice.channel
             for member in voice_channel.members:
-                event_log += f"{member.name} ya estaba en el canal de voz a las {datetime.now().strftime('%H:%M:%S')}\n"
-                voice_channel_data[member.id] = datetime.now()  # Registrar la hora actual como su tiempo de entrada
+                current_time = get_current_time().strftime('%H:%M:%S')
+                event_log += f"{member.name} ya estaba en el canal de voz a las {current_time}\n"
+                voice_channel_data[member.id] = get_current_time()  # Registrar la hora actual como su tiempo de entrada
+                await ctx.send(f"{member.name} ya estaba en el canal de voz a las {current_time}")
 
         await ctx.send("¡La reunión ha comenzado! Se empezarán a registrar los eventos.")
     else:
         await ctx.send("La reunión ya está activa.")
-
 
 # Evento para registrar cuando un usuario entra o sale de un canal de voz
 @bot.event
@@ -832,28 +840,42 @@ async def on_voice_state_update(member, before, after):
     if not reunion_activa:
         return  # No hacer nada si la reunión no está activa
 
+    current_time = get_current_time().strftime('%H:%M:%S')
+
     # Si el usuario se une a un canal de voz
     if before.channel is None and after.channel is not None:
-        event_log += f"{member.name} entró al canal de voz a las {datetime.now().strftime('%H:%M:%S')}\n"
+        event_log += f"{member.name} entró al canal de voz a las {current_time}\n"
+        await member.guild.system_channel.send(f"{member.name} entró al canal de voz a las {current_time}")
         # Registrar el tiempo de entrada del usuario
-        voice_channel_data[member.id] = datetime.now()
+        voice_channel_data[member.id] = get_current_time()
 
     # Si el usuario sale de un canal de voz
     elif before.channel is not None and after.channel is None:
-        event_log += f"{member.name} salió del canal de voz a las {datetime.now().strftime('%H:%M:%S')}\n"
+        event_log += f"{member.name} salió del canal de voz a las {current_time}\n"
+        await member.guild.system_channel.send(f"{member.name} salió del canal de voz a las {current_time}")
         # Calcular el tiempo que el usuario estuvo en el canal
         if member.id in voice_channel_data:
-            time_spent = datetime.now() - voice_channel_data.pop(member.id)
+            time_spent = get_current_time() - voice_channel_data.pop(member.id)
             durations[member.id] = durations.get(member.id, timedelta()) + time_spent
             event_log += f"Tiempo total de {member.name}: {str(time_spent)}\n"
-
 
 # Comando para finalizar la reunión y generar el archivo de texto con el resumen
 @bot.command(name="finalizar_reunion")
 async def finalizar_reunion(ctx):
-    global event_log, durations, reunion_activa
+    global event_log, durations, reunion_activa, voice_channel_data
 
     if reunion_activa:
+        # Registrar la salida de los usuarios que aún están en el canal de voz
+        for member_id in list(voice_channel_data.keys()):
+            member = await ctx.guild.fetch_member(member_id)
+            current_time = get_current_time().strftime('%H:%M:%S')
+            event_log += f"{member.name} salió del canal de voz a las {current_time} (fin de la reunión)\n"
+            await ctx.send(f"{member.name} salió del canal de voz a las {current_time} (fin de la reunión)")
+            # Calcular el tiempo que el usuario estuvo en el canal
+            time_spent = get_current_time() - voice_channel_data.pop(member_id)
+            durations[member_id] = durations.get(member_id, timedelta()) + time_spent
+            event_log += f"Tiempo total de {member.name}: {str(time_spent)}\n"
+
         # Generar el resumen del tiempo que cada usuario estuvo en la reunión
         event_log += "\nResumen de la reunión:\n"
         for user_id, total_time in durations.items():
