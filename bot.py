@@ -857,7 +857,7 @@ async def on_voice_state_update(member, before, after):
 
     # Definir el canal al que se deben enviar los mensajes (canal del sistema o un canal predeterminado)
     system_channel = member.guild.system_channel  # Canal del sistema
-    default_channel = discord.utils.get(member.guild.text_channels, name="general")  # Cambia "general" por el nombre del canal que prefieras
+    default_channel = discord.utils.get(member.guild.text_channels, name="hola")  # Cambia "general" por el nombre del canal que prefieras
 
     # Si no hay canal del sistema, usa el canal predeterminado
     target_channel = system_channel if system_channel else default_channel
