@@ -56,7 +56,7 @@ def list_commands():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="google-site-verification" content="1gsxA927OlgR5l..."> <!-- Tu meta verificación aquí -->
+        <meta name="google-site-verification" content="1gsxA927OIgR5IaXavEH3eXGksbzkSMRjBF5NvXP0Mk" /> <!-- Tu meta verificación aquí -->
         <title>Comandos del bot</title>
     </head>
     <body>
