@@ -809,6 +809,9 @@ async def on_message(message):
 def get_current_time():
     return datetime.now(LOCAL_TZ)
 
+# Variable global para almacenar el canal donde se inició la reunión
+reunion_channel = None
+
 @bot.command(name="iniciar_reunion")
 async def iniciar_reunion(ctx):
     global reunion_activa, event_log, voice_channel_data, durations, reunion_channel
@@ -824,8 +827,7 @@ async def iniciar_reunion(ctx):
             reunion_channel = ctx.channel  # Guardar el canal donde se inició la reunión
         else:
             await ctx.send("La reunión ya está activa.")
-
-
+            return
 
         voice_channel = ctx.author.voice.channel
         await ctx.send(f"Detectando el canal de voz: {voice_channel.name}")
@@ -880,7 +882,7 @@ async def on_voice_state_update(member, before, after):
 # Comando para finalizar la reunión y generar el archivo de texto con el resumen
 @bot.command(name="finalizar_reunion")
 async def finalizar_reunion(ctx):
-    global event_log, durations, reunion_activa, voice_channel_data
+    global event_log, durations, reunion_activa, voice_channel_data, reunion_channel
 
     if reunion_activa:
         # Registrar la salida de los usuarios que aún están en el canal de voz
@@ -892,7 +894,6 @@ async def finalizar_reunion(ctx):
             # Calcular el tiempo que el usuario estuvo en el canal
             time_spent = get_current_time() - voice_channel_data.pop(member_id)
             durations[member_id] = durations.get(member_id, timedelta()) + time_spent
-            # event_log += f"Tiempo total de {member.name}: {str(time_spent)}\n"
 
         # Generar el resumen del tiempo que cada usuario estuvo en la reunión
         event_log += "\nResumen de la reunión:\n"
@@ -913,6 +914,7 @@ async def finalizar_reunion(ctx):
         voice_channel_data = {}
         durations = {}
         reunion_activa = False
+        reunion_channel = None  # Resetear el canal de la reunión
     else:
         await ctx.send("No hay ninguna reunión activa.")
 
