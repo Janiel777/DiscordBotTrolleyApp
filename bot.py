@@ -41,7 +41,6 @@ def list_commands():
         "!newdocument [nombre] [url]": "Añade un nuevo documento con un nombre y una URL a la base de datos.",
         "!listdocuments": "Lista todos los documentos almacenados en la base de datos.",
         "!deletedocument [nombre]": "Elimina un documento de la base de datos por su nombre.",
-        "/notificaciones": "Muestra la url de la pagina que muestra las notificaciones que maneja el bot con GitHub."
     }
 
     # Lista de URLs adicionales del servidor
@@ -59,7 +58,8 @@ def list_commands():
     # Generar una sección para las URLs adicionales del servidor
     html += "<h2>Otras URLs del servidor</h2><ul>"
     for url, description in urls_list.items():
-        html += f"<li><b>{url}</b>: {description}</li>"
+        # Usar la etiqueta <a> para hacer la URL clicable
+        html += f'<li><b><a href="{url}">{url}</a></b>: {description}</li>'
     html += "</ul>"
 
     return html
