@@ -33,7 +33,38 @@ client = pymongo.MongoClient(MONGO_URI)
 db = client['trolleyAppDB']
 collection = db['documents']
 
+
 @app.route('/')
+def list_commands():
+    commands_list = {
+        "!help": "Muestra la URL del servidor donde se puede acceder a más información.",
+        "!newdocument [nombre] [url]": "Añade un nuevo documento con un nombre y una URL a la base de datos.",
+        "!listdocuments": "Lista todos los documentos almacenados en la base de datos.",
+        "!deletedocument [nombre]": "Elimina un documento de la base de datos por su nombre.",
+        "/notificaciones": "Muestra la url de la pagina que muestra las notificaciones que maneja el bot con GitHub."
+    }
+
+    # Lista de URLs adicionales del servidor
+    urls_list = {
+        "/notificaciones": "Muestra la página que lista las notificaciones manejadas por el bot con GitHub.",
+        "/github-webhook": "Recibe eventos de GitHub y los procesa.",
+    }
+
+    # Generar un HTML con la lista de comandos
+    html = "<h1>Comandos del bot</h1><ul>"
+    for command, description in commands_list.items():
+        html += f"<li><b>{command}</b>: {description}</li>"
+    html += "</ul>"
+
+    # Generar una sección para las URLs adicionales del servidor
+    html += "<h2>Otras URLs del servidor</h2><ul>"
+    for url, description in urls_list.items():
+        html += f"<li><b>{url}</b>: {description}</li>"
+    html += "</ul>"
+
+    return html
+
+@app.route('/notificaciones')
 def index():
     # Lista de todas las notificaciones que maneja el bot
     notifications = [
@@ -616,74 +647,19 @@ def run_flask():
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
 
 
+@bot.command(name='help')
+async def help(ctx):
+    # Aquí defines la URL de tu servidor donde estarán listadas las notificaciones
+    server_url = "https://discord-bot-trolley-app-7cf3be57fb8b.herokuapp.com/"  # Reemplaza con la URL real de tu servidor
+    message = f"Puedes ver la lista de comandos y detalles adicionales en la siguiente URL: {server_url}"
+    await ctx.send(message)
+
 @bot.command(name='notificaciones')
 async def notificaciones(ctx):
     # Aquí defines la URL de tu servidor donde estarán listadas las notificaciones
-    server_url = "https://discord-bot-trolley-app-7cf3be57fb8b.herokuapp.com/"  # Reemplaza con la URL real de tu servidor
-    message = f"Puedes ver todas las notificaciones que manejo en la siguiente URL: {server_url}"
+    server_url = "https://discord-bot-trolley-app-7cf3be57fb8b.herokuapp.com/notificaciones"  # Reemplaza con la URL real de tu servidor
+    message = f"Puedes ver la lista de notificaciones en la siguiente URL: {server_url}"
     await ctx.send(message)
-
-
-@bot.command()
-async def startattendance(ctx):
-    global tracking
-    if ctx.author.voice is None or ctx.author.voice.channel is None:
-        await ctx.send("¡Debes estar en un canal de voz para iniciar la asistencia!")
-        return
-
-    tracking = True
-    voice_channel = ctx.author.voice.channel
-    print(f"Iniciando el seguimiento de asistencia en el canal: {voice_channel.name}")
-
-    for member in voice_channel.members:
-        if member.id not in attendance:  # Solo agregar si no está ya registrado
-            attendance[member.id] = {"join": datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-            print(f"Marcado: {member.name} a las {attendance[member.id]['join']}")
-
-    await ctx.send(f"¡Seguimiento de asistencia iniciado en el canal: {voice_channel.name}!")
-
-
-@bot.command()
-async def endattendance(ctx):
-    global tracking
-    tracking = False
-    await ctx.send("¡Seguimiento de asistencia finalizado! Generando reporte...")
-
-    # Generar el reporte en formato de texto
-    report_lines = ["Reporte de Asistencia:\n"]
-    print("Generando reporte de asistencia...")
-    for user_id, times in attendance.items():
-        member = ctx.guild.get_member(user_id)
-        report_lines.append(f"Usuario: {member.name}\nHora de Entrada: {times.get('join')}\nHora de Salida: {times.get('leave', 'Aún presente')}\n")
-        print(f"Usuario {member.name} - Entrada: {times.get('join')} - Salida: {times.get('leave', 'Aún presente')}")
-
-    # Guardar el reporte en un archivo de texto
-    filename = f"Attendance_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-    with open(filename, 'w') as f:
-        f.writelines(report_lines)
-
-    print(f"Reporte guardado como {filename}")
-
-    # Enviar el archivo al canal de Discord
-    with open(filename, 'rb') as f:
-        await ctx.send("Aquí está el reporte de asistencia:", file=discord.File(f, filename))
-
-    print(f"Reporte enviado al canal de Discord {ctx.channel.name}")
-    attendance.clear()
-    print("Registro de asistencia limpiado.")
-
-
-@bot.event
-async def on_voice_state_update(member, before, after):
-    if tracking:
-        if not before.channel and after.channel:  # Usuario se une al canal
-            attendance[member.id] = {"join": datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-            print(f"{member.name} se unió al canal {after.channel.name} a las {attendance[member.id]['join']}")
-        elif before.channel and not after.channel:  # Usuario sale del canal
-            if member.id in attendance:
-                attendance[member.id]["leave"] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                print(f"{member.name} salió del canal {before.channel.name} a las {attendance[member.id]['leave']}")
-
 
 
 # Comando para añadir un nuevo documento
