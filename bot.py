@@ -855,22 +855,36 @@ async def on_voice_state_update(member, before, after):
 
     current_time = get_current_time().strftime('%H:%M:%S')
 
+    # Definir el canal al que se deben enviar los mensajes (canal del sistema o un canal predeterminado)
+    system_channel = member.guild.system_channel  # Canal del sistema
+    default_channel = discord.utils.get(member.guild.text_channels, name="general")  # Cambia "general" por el nombre del canal que prefieras
+
+    # Si no hay canal del sistema, usa el canal predeterminado
+    target_channel = system_channel if system_channel else default_channel
+
+    if target_channel is None:
+        print("No se pudo encontrar un canal para enviar mensajes")
+        return  # No hay canal disponible para enviar mensajes
+
     # Si el usuario se une a un canal de voz
     if before.channel is None and after.channel is not None:
         event_log += f"{member.name} entró al canal de voz a las {current_time}\n"
-        await member.guild.system_channel.send(f"{member.name} entró al canal de voz a las {current_time}")
+        await target_channel.send(f"{member.name} entró al canal de voz a las {current_time}")
         # Registrar el tiempo de entrada del usuario
         voice_channel_data[member.id] = get_current_time()
 
     # Si el usuario sale de un canal de voz
     elif before.channel is not None and after.channel is None:
         event_log += f"{member.name} salió del canal de voz a las {current_time}\n"
-        await member.guild.system_channel.send(f"{member.name} salió del canal de voz a las {current_time}")
+        await target_channel.send(f"{member.name} salió del canal de voz a las {current_time}")
         # Calcular el tiempo que el usuario estuvo en el canal
         if member.id in voice_channel_data:
             time_spent = get_current_time() - voice_channel_data.pop(member.id)
             durations[member.id] = durations.get(member.id, timedelta()) + time_spent
             event_log += f"Tiempo total de {member.name}: {str(time_spent)}\n"
+
+    # Mensaje de depuración para asegurarnos de que la lógica se ejecuta correctamente
+    print(f"Evento procesado para {member.name} en {current_time}")
 
 # Comando para finalizar la reunión y generar el archivo de texto con el resumen
 @bot.command(name="finalizar_reunion")
