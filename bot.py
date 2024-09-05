@@ -17,6 +17,9 @@ GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
 ORG_NAME = 'uprm-inso4116-2024-2025-s1'  # Propietario del repositorio
 REPO_NAME = 'semester-project-trolley-tracker-app'  # Nombre del repositorio
 
+# Archivo JSON donde se almacenarán los documentos
+DOCUMENTS_FILE = 'documents.json'
+
 attendance = {}
 tracking = False
 
@@ -623,12 +626,12 @@ async def startattendance(ctx):
 
     tracking = True
     voice_channel = ctx.author.voice.channel
-    print(f"Iniciando seguimiento de asistencia en el canal: {voice_channel.name}")
+    print(f"Iniciando el seguimiento de asistencia en el canal: {voice_channel.name}")
 
     for member in voice_channel.members:
         if member.id not in attendance:  # Solo agregar si no está ya registrado
             attendance[member.id] = {"join": datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-            print(f"Registrado {member.name} con hora de entrada {attendance[member.id]['join']}")
+            print(f"Marcado: {member.name} a las {attendance[member.id]['join']}")
 
     await ctx.send(f"¡Seguimiento de asistencia iniciado en el canal: {voice_channel.name}!")
 
@@ -673,6 +676,40 @@ async def on_voice_state_update(member, before, after):
             if member.id in attendance:
                 attendance[member.id]["leave"] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 print(f"{member.name} salió del canal {before.channel.name} a las {attendance[member.id]['leave']}")
+
+
+
+# Cargar documentos desde el archivo JSON
+def load_documents():
+    if not os.path.exists(DOCUMENTS_FILE):
+        return {}
+    with open(DOCUMENTS_FILE, 'r') as file:
+        return json.load(file)
+
+# Guardar documentos en el archivo JSON
+def save_documents(documents):
+    with open(DOCUMENTS_FILE, 'w') as file:
+        json.dump(documents, file, indent=4)
+
+# Inicializar los documentos
+documents = load_documents()
+
+# Comando para añadir un nuevo documento
+@bot.command(name='new-document-url')
+@commands.has_permissions(administrator=True)
+async def add_document(ctx, name: str, url: str):
+    documents[name] = url
+    save_documents(documents)
+    await ctx.send(f"El documento '{name}' ha sido agregado con éxito.")
+
+# Comando para mostrar todos los documentos
+@bot.command(name='show-documents')
+async def show_documents(ctx):
+    if not documents:
+        await ctx.send("No hay documentos agregados.")
+    else:
+        doc_list = "\n".join([f"{name}: {url}" for name, url in documents.items()])
+        await ctx.send(f"Documentos disponibles:\n{doc_list}")
 
 
 
