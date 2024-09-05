@@ -784,9 +784,8 @@ async def on_message(message):
                 else:
                     confirmation = await message.channel.send("Operación cancelada.")
 
-                # Eliminar los mensajes después de un breve retraso
+                # Eliminar solo los mensajes generados por la interacción
                 await asyncio.sleep(5)  # Esperar 5 segundos antes de borrar los mensajes
-                await message.delete()
                 await response.delete()
                 await reply.delete()
                 await confirmation.delete()
@@ -794,7 +793,6 @@ async def on_message(message):
             except asyncio.TimeoutError:
                 timeout_message = await message.channel.send("Se agotó el tiempo de espera para la respuesta.")
                 await asyncio.sleep(5)
-                await message.delete()
                 await response.delete()
                 await timeout_message.delete()
 
