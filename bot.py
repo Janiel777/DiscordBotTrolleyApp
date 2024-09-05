@@ -812,38 +812,43 @@ def get_current_time():
 @bot.command(name="iniciar_reunion")
 async def iniciar_reunion(ctx):
     global reunion_activa, event_log, voice_channel_data, durations, reunion_channel
-    if not reunion_activa:
-        reunion_activa = True
-        event_log = "Reunión iniciada:\n"
-        voice_channel_data = {}
-        durations = {}
-        reunion_channel = ctx.channel  # Guardar el canal donde se inició la reunión
 
-        # Verificar si el autor está en un canal de voz
-        if ctx.author.voice and ctx.author.voice.channel:
-            voice_channel = ctx.author.voice.channel
-            await ctx.send(f"Detectando el canal de voz: {voice_channel.name}")
+    # Verificar si el autor está en un canal de voz
+    if ctx.author.voice and ctx.author.voice.channel:
 
-            members_in_channel = voice_channel.members
-
-            # Si el autor no está en la lista de miembros (edge case), lo añadimos manualmente
-            if ctx.author not in members_in_channel:
-                members_in_channel.append(ctx.author)
-
-            for member in members_in_channel:  # Registrar a todos los miembros presentes
-                if member.bot:
-                    continue  # Ignorar los bots
-                current_time = get_current_time().strftime('%H:%M:%S')
-                event_log += f"{member.name} ya estaba en el canal de voz a las {current_time}\n"
-                voice_channel_data[member.id] = get_current_time()  # Registrar la hora actual como su tiempo de entrada
-                await ctx.send(f"{member.name} ya estaba en el canal de voz a las {current_time}")
+        if not reunion_activa:
+            reunion_activa = True
+            event_log = "Reunión iniciada:\n"
+            voice_channel_data = {}
+            durations = {}
+            reunion_channel = ctx.channel  # Guardar el canal donde se inició la reunión
         else:
-            await ctx.send("No estás en un canal de voz.")
-            return
+            await ctx.send("La reunión ya está activa.")
 
-        await ctx.send("¡La reunión ha comenzado! Se empezarán a registrar los eventos.")
+
+
+        voice_channel = ctx.author.voice.channel
+        await ctx.send(f"Detectando el canal de voz: {voice_channel.name}")
+
+        members_in_channel = voice_channel.members
+
+        # Si el autor no está en la lista de miembros (edge case), lo añadimos manualmente
+        if ctx.author not in members_in_channel:
+            members_in_channel.append(ctx.author)
+
+        for member in members_in_channel:  # Registrar a todos los miembros presentes
+            if member.bot:
+                continue  # Ignorar los bots
+            current_time = get_current_time().strftime('%H:%M:%S')
+            event_log += f"{member.name} ya estaba en el canal de voz a las {current_time}\n"
+            voice_channel_data[member.id] = get_current_time()  # Registrar la hora actual como su tiempo de entrada
+            await ctx.send(f"{member.name} ya estaba en el canal de voz a las {current_time}")
     else:
-        await ctx.send("La reunión ya está activa.")
+        await ctx.send("No estás en un canal de voz.")
+        return
+
+    await ctx.send("¡La reunión ha comenzado! Se empezarán a registrar los eventos.")
+
 
 # Evento para registrar cuando un usuario entra o sale de un canal de voz
 @bot.event
