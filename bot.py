@@ -137,7 +137,7 @@ def index():
     return "<h1>Notificaciones que maneja el bot</h1>" + "<ul>" + "".join(f"<li>{notification}</li>" for notification in notifications) + "</ul>"
 
 
-@app.route('/listadocumentos')
+@app.route('/documentos')
 def lista_documentos():
     # Consulta a la base de datos para obtener todos los documentos
     documentos = collection.find()
