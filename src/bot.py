@@ -14,7 +14,7 @@ import pytz  # Para manejo de zona horaria
 import subprocess
 import traceback
 
-from getStatistics import get_repo_issues, get_repo, get_project_items_with_custom_fields
+from getStatistics import get_repo_issues, get_repo, get_project_items_with_custom_fields, issuesDK
 
 app = Flask(__name__)
 
@@ -966,6 +966,19 @@ async def projects(ctx):
 
         # Enviar el archivo al canal
         await ctx.send("Aquí están los datos del repositorio:", file=discord.File("repo_data.txt"))
+
+
+# Comando para ejecutar la función main
+@bot.command()
+async def calcular_puntos(ctx):
+
+    # Ejecutar la función main que obtiene los puntos con y sin dk
+    total_with_dk, total_without_dk, average_dk = issuesDK(GITHUB_API_TOKEN=GITHUB_TOKEN)
+
+    # Enviar los resultados al canal de Discord
+    await ctx.send(f"Total con DK: {total_with_dk}")
+    await ctx.send(f"Total sin DK: {total_without_dk}")
+    await ctx.send(f"Promedio de DK: {average_dk}")
 
 @bot.event
 async def on_ready():
