@@ -242,7 +242,7 @@ def get_closed_issues_by_milestone(GITHUB_API_TOKEN, milestone_title):
     closed_issues = get_closed_issues(GITHUB_API_TOKEN)
 
     # Filtrar los issues cerrados por el milestone especificado
-    filtered_closed_issues = filter_issues_by_milestone(closed_issues, milestone_title)
+    filtered_closed_issues = filter_issues_by_iteration(closed_issues, milestone_title)
 
     return filtered_closed_issues
 
