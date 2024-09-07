@@ -352,7 +352,7 @@ def filter_closed_issues_before_date(issues, target_date):
     return filtered_issues
 
 
-def get_milestone_closed_total_points_with_dk(GITHUB_API_TOKEN, milestone_name, milestone_end):
+def get_milestone_closed_total_points_with_dk(GITHUB_API_TOKEN, milestone_name, milestone_start, milestone_end):
     """
     Calcula el total de puntos con DK para todos los issues cerrados antes de la fecha de fin del milestone.
 
@@ -371,6 +371,6 @@ def get_milestone_closed_total_points_with_dk(GITHUB_API_TOKEN, milestone_name, 
     closed_issues_before_end = filter_closed_issues_before_date(milestone_issues, milestone_end)
 
     # Calcular los puntos con DK para esos issues cerrados
-    total_points_with_dk = issues_total_points_with_dk(closed_issues_before_end, milestone_end, milestone_end)
+    total_points_with_dk = issues_total_points_with_dk(closed_issues_before_end, milestone_start, milestone_end)
 
     return total_points_with_dk

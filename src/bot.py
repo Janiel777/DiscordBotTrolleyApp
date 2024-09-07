@@ -1198,11 +1198,15 @@ async def milestone_closed_points_with_dk(ctx, milestone_name: str):
     :param milestone_name: El nombre del milestone a filtrar.
     """
 
-    # Puedes ajustar estas fechas de inicio y fin de acuerdo con el milestone que estás utilizando
-    milestone_end = datetime(2024, 9, 20)  # Placeholder para la fecha de fin del milestone
+    milestone_start = datetime(2024, 8, 29)  # Placeholder para la fecha de inicio
+    milestone_end = datetime(2024, 9, 20)  # Placeholder para la fecha de fin
+    if milestone_name == "Milestone #1":
+        # Puedes ajustar estas fechas de inicio y fin de acuerdo con el milestone que estás utilizando
+        milestone_start = datetime(2024, 8, 29)  # Placeholder para la fecha de inicio
+        milestone_end = datetime(2024, 9, 20)  # Placeholder para la fecha de fin
 
     # Llamar a la función para obtener los puntos con DK para los issues cerrados antes de la fecha límite
-    total_points_with_dk = get_milestone_closed_total_points_with_dk(GITHUB_TOKEN, milestone_name, milestone_end)
+    total_points_with_dk = get_milestone_closed_total_points_with_dk(GITHUB_TOKEN, milestone_name, milestone_start, milestone_end)
 
     # Responder en Discord con el resultado
     await ctx.send(f"Total de puntos con DK para los issues cerrados del milestone '{milestone_name}' antes de {milestone_end}: {total_points_with_dk}")
