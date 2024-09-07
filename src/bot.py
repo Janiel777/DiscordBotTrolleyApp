@@ -1238,7 +1238,8 @@ async def milestone_grade(ctx, milestone_name: str):
 @bot.command(name="individual_grades")
 async def individual_grades(ctx, milestone_name: str):
     """
-    Comando para calcular y mostrar las notas individuales de cada persona en un milestone específico.
+    Comando para calcular y mostrar las notas individuales de cada persona en un milestone específico,
+    tanto antes como después de ser multiplicadas por la nota del milestone. También muestra la nota del milestone.
 
     :param ctx: Contexto del comando en Discord.
     :param milestone_name: El nombre del milestone.
@@ -1250,10 +1251,18 @@ async def individual_grades(ctx, milestone_name: str):
     # Llamar a la función para calcular las notas individuales
     grades = calculate_individual_grades(GITHUB_TOKEN, milestone_name, milestone_start, milestone_end)
 
+    # Calcular el promedio del milestone (todos los issues cerrados y abiertos con DK)
+    milestone_average = get_milestone_average_with_dk(GITHUB_TOKEN, milestone_name, milestone_start, milestone_end)
+
     # Preparar el mensaje con las notas
     grade_message = f"Notas individuales para el milestone '{milestone_name}':\n"
-    for assignee, grade in grades.items():
-        grade_message += f"{assignee}: {grade:.2f}\n"
+    grade_message += f"Nota del milestone (todos los issues con DK): {milestone_average:.2f}\n\n"
+
+    # Mostrar notas individuales antes y después de multiplicar por la nota del milestone
+    for assignee, (individual_grade, final_grade) in grades.items():
+        grade_message += (f"{assignee}:\n"
+                          f"  Nota individual sin multiplicar: {individual_grade:.2f}\n"
+                          f"  Nota final (después de multiplicar por la del milestone): {final_grade:.2f}\n\n")
 
     # Enviar el mensaje al canal de Discord
     await ctx.send(grade_message)
