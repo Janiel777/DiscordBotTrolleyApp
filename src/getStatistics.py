@@ -313,3 +313,25 @@ def get_milestone_total_points_without_dk(GITHUB_API_TOKEN, milestone_name):
     total_points_without_dk = issues_total_points_without_dk(milestone_issues)
 
     return total_points_without_dk
+
+
+def get_milestone_total_points_with_dk(GITHUB_API_TOKEN, milestone_name, milestone_start, milestone_end):
+    """
+    Calcula el total de puntos con DK para todos los issues (abiertos y cerrados) de un milestone específico.
+
+    :param GITHUB_API_TOKEN: El token de autenticación para la API de GitHub.
+    :param milestone_name: El nombre del milestone a filtrar.
+    :param milestone_start: La fecha de inicio del milestone.
+    :param milestone_end: La fecha de fin del milestone.
+    :return: Total de puntos con DK para los issues del milestone.
+    """
+    # Obtener todos los issues (abiertos y cerrados)
+    all_issues = get_all_issues(GITHUB_API_TOKEN)
+
+    # Filtrar los issues por el milestone
+    milestone_issues = filter_issues_by_milestone(all_issues, milestone_name)
+
+    # Calcular los puntos con DK
+    total_points_with_dk = issues_total_points_with_dk(milestone_issues, milestone_start, milestone_end)
+
+    return total_points_with_dk
