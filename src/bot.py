@@ -14,7 +14,7 @@ import pytz  # Para manejo de zona horaria
 import subprocess
 import traceback
 
-from getStatistics import get_repo_issues, get_repo, get_project_items_with_custom_fields, milestone_grade, perfect_milestone_grade_all_issues_closed
+from getStatistics import get_repo_issues, get_repo, get_project_items_with_custom_fields
 
 app = Flask(__name__)
 
@@ -968,27 +968,7 @@ async def projects(ctx):
         await ctx.send("Aquí están los datos del repositorio:", file=discord.File("repo_data.txt"))
 
 
-# Comando para ejecutar la función main
-@bot.command()
-async def perfect_milestone_grade(ctx):
 
-    # Ejecutar la función main que obtiene los puntos con y sin dk
-    total_with_dk, total_without_dk, average_dk = perfect_milestone_grade_all_issues_closed(GITHUB_API_TOKEN=GITHUB_TOKEN)
-
-    # Enviar los resultados al canal de Discord
-    await ctx.send(f"Total con DK: {total_with_dk}")
-    await ctx.send(f"Total sin DK: {total_without_dk}")
-    await ctx.send(f"Promedio de DK: {average_dk}")
-
-@bot.command()
-async def current_milestone_grade(ctx):
-    # Ejecutar la función main que obtiene los puntos con y sin dk
-    total_with_dk, total_without_dk, average_dk = milestone_grade(GITHUB_API_TOKEN=GITHUB_TOKEN)
-
-    # Enviar los resultados al canal de Discord
-    await ctx.send(f"Total con DK: {total_with_dk}")
-    await ctx.send(f"Total sin DK: {total_without_dk}")
-    await ctx.send(f"Promedio de DK: {average_dk}")
 
 
 @bot.event
