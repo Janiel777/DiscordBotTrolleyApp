@@ -48,6 +48,56 @@ def get_repo(GITHUB_API_TOKEN):
         return f"Error: {response.status_code}, {response.text}"
 
 
+def get_collaborators(GITHUB_API_TOKEN):
+    """
+    Devuelve una lista de todos los colaboradores (miembros) del repositorio.
+
+    :param GITHUB_API_TOKEN: El token de autenticación para la API de GitHub.
+    :return: Lista de colaboradores.
+    """
+    repo_owner = "uprm-inso4116-2024-2025-s1"
+    repo_name = "semester-project-trolley-tracker-app"
+
+    # URL para obtener los colaboradores del repositorio
+    url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/collaborators"
+
+    headers = {
+        "Authorization": f"token {GITHUB_API_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        return [collaborator['login'] for collaborator in response.json()]
+    else:
+        return f"Error: {response.status_code}, {response.text}"
+
+
+def find_unassigned_members(GITHUB_API_TOKEN):
+    """
+    Encuentra a los colaboradores que aún no tienen issues abiertos asignados.
+
+    :param GITHUB_API_TOKEN: El token de autenticación para la API de GitHub.
+    :return: Lista de colaboradores sin issues abiertos asignados.
+    """
+    # Obtener todos los colaboradores del repositorio
+    collaborators = get_collaborators(GITHUB_API_TOKEN)
+
+    # Obtener todos los issues abiertos
+    open_issues = get_open_issues(GITHUB_API_TOKEN)
+
+    # Agrupar los issues abiertos por asignado
+    assigned_members = set()
+    assignee_issues = group_issues_by_assignee(open_issues)
+    for assignee in assignee_issues:
+        assigned_members.add(assignee)
+
+    # Encontrar los colaboradores que no tienen issues abiertos asignados
+    unassigned_members = [collaborator for collaborator in collaborators if collaborator not in assigned_members]
+
+    return unassigned_members
+
 def get_project_items_with_custom_fields(GITHUB_API_TOKEN):
     query = """
     query QueryProjectItemsForTeam(

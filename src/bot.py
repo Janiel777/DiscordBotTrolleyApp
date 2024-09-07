@@ -19,7 +19,7 @@ from getStatistics import get_repo_issues, get_repo, get_project_items_with_cust
     get_closed_issues, get_closed_issues_by_milestone, get_milestone_perfect_total_points_without_dk, \
     get_milestone_perfect_total_points_with_dk, get_milestone_closed_total_points_with_dk, \
     get_milestone_average_with_dk, get_milestone_closed_average_with_dk, calculate_individual_grades, \
-    group_issues_by_assignee
+    group_issues_by_assignee, find_unassigned_members
 
 app = Flask(__name__)
 
@@ -1290,6 +1290,28 @@ async def individual_grades(ctx, milestone_name: str):
     # Enviar el mensaje al canal de Discord
     await ctx.send(grade_message)
 
+
+
+@bot.command(name="unassigned_members")
+async def unassigned_members(ctx):
+    """
+    Comando para mostrar la lista de colaboradores que aún no tienen un issue abierto asignado.
+
+    :param ctx: Contexto del comando en Discord.
+    """
+    # Obtener la lista de colaboradores sin issues abiertos asignados
+    unassigned_members = find_unassigned_members(GITHUB_TOKEN)
+
+    # Generar el mensaje para mostrar en Discord
+    if unassigned_members:
+        message = "Los siguientes colaboradores aún no tienen un issue abierto asignado:\n"
+        for member in unassigned_members:
+            message += f"- {member}\n"
+    else:
+        message = "Todos los colaboradores tienen al menos un issue abierto asignado."
+
+    # Enviar el mensaje al canal de Discord
+    await ctx.send(message)
 
 @bot.event
 async def on_ready():
