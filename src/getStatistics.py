@@ -218,21 +218,15 @@ def get_closed_issues(GITHUB_API_TOKEN):
     return closed_issues
 
 
-def filter_issues_by_milestone(issues, milestone_title):
+def filter_issues_by_iteration(issues, iteration_name):
     """
-    Filtra los issues que pertenecen a un milestone específico.
+    Filtra los issues por el campo 'Iteration'.
 
-    :param issues: Lista de issues (devueltos por get_all_issues o get_open_issues)
-    :param milestone_title: El título del milestone a filtrar
-    :return: Lista de issues que pertenecen al milestone especificado
+    :param issues: Lista de issues obtenidos con get_project_items_with_custom_fields
+    :param iteration_name: El nombre de la Iteration por la cual filtrar
+    :return: Lista de issues que pertenecen a la Iteration especificada
     """
-    filtered_issues = []
-
-    for issue in issues:
-        milestone = issue['content'].get('milestone')
-        if milestone and milestone.get('title') == milestone_title:
-            filtered_issues.append(issue)
-
+    filtered_issues = [issue for issue in issues if issue.get('iteration', {}).get('name') == iteration_name]
     return filtered_issues
 
 
