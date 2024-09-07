@@ -48,42 +48,89 @@ def get_repo(GITHUB_API_TOKEN):
         return f"Error: {response.status_code}, {response.text}"
 
 
-
 def get_project_items_with_custom_fields(GITHUB_API_TOKEN):
     query = """
-    {
-      organization(login: "uprm-inso4116-2024-2025-s1") {
-        projectV2(number: 3) {
-          title
-          items(first: 10) {
-            nodes {
-              content {
-                ... on Issue {
-                  title
-                  url
-                  state
-                  assignees(first: 5) {
-                    nodes {
-                      login
+    query QueryProjectItemsForTeam(
+      $owner: String!
+      $team: String!
+      $nextPage: String
+    ) {
+      organization(login: $owner) {
+        projectsV2(
+          query: $team
+          first: 1
+          orderBy: { field: TITLE, direction: ASC }
+        ) {
+          nodes {
+            title
+            items(first: 100, after: $nextPage) {
+              pageInfo {
+                endCursor
+                hasNextPage
+              }
+              nodes {
+                content {
+                  ... on Issue {
+                    url
+                    number
+                    title
+                    author {
+                        login
+                    }
+                    createdAt
+                    closed
+                    closedAt
+                    milestone {
+                      title
+                    }
+                    assignees(first: 20) {
+                      nodes {
+                        login
+                      }
                     }
                   }
                 }
-              }
-              fieldValues(first: 10) {
-                nodes {
+                taskType: fieldValueByName(name: "Task Type") {
                   ... on ProjectV2ItemFieldSingleSelectValue {
-                    field {
-                      name
-                    }
                     option {
                       name
                     }
                   }
-                  ... on ProjectV2ItemFieldNumberValue {
-                    field {
+                }
+                priority: fieldValueByName(name: "Priority") {
+                  ... on ProjectV2ItemFieldSingleSelectValue {
+                    option {
                       name
                     }
+                  }
+                }
+                difficulty: fieldValueByName(name: "Difficulty") {
+                  ... on ProjectV2ItemFieldSingleSelectValue {
+                    option {
+                      name
+                    }
+                  }
+                }
+                estimate: fieldValueByName(name: "Estimate") {
+                  ... on ProjectV2ItemFieldNumberValue {
                     number
+                  }
+                }
+                difficultyPoints: fieldValueByName(name: "Difficulty Points") {
+                  ... on ProjectV2ItemFieldNumberValue {
+                    number
+                  }
+                }
+                priorityPoints: fieldValueByName(name: "Priority Points") {
+                  ... on ProjectV2ItemFieldNumberValue {
+                    number
+                  }
+                }
+                iteration: fieldValueByName(name: "Iteration") {
+                  ... on ProjectV2ItemFieldSingleSelectValue {
+                    option {
+                      name
+                    }
                   }
                 }
               }
@@ -99,7 +146,17 @@ def get_project_items_with_custom_fields(GITHUB_API_TOKEN):
         "Authorization": f"Bearer {GITHUB_API_TOKEN}",
         "Content-Type": "application/json"
     }
-    response = requests.post(url, json={"query": query}, headers=headers)
+    # Combinar la consulta y las variables en un solo diccionario
+    data = {
+        "query": query,
+        "variables": {
+            "owner": "uprm-inso4116-2024-2025-s1",
+            "team": "Trolley Tracker App",
+            "nextPage": None
+        }
+    }
+
+    response = requests.post(url, json=data, headers=headers)
 
     if response.status_code == 200:
         return response.json()  # Devolver los detalles de los elementos del proyecto en formato JSON
