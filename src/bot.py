@@ -15,7 +15,7 @@ import subprocess
 import traceback
 
 from getStatistics import get_repo_issues, get_repo, get_project_items_with_custom_fields, get_all_issues, \
-    get_open_issues
+    get_open_issues, filter_issues_by_milestone
 
 app = Flask(__name__)
 
@@ -962,6 +962,61 @@ async def open_issues(ctx):
         await ctx.send(message)
     else:
         await ctx.send("No hay issues abiertos.")
+
+@bot.command()
+async def open_issues_by_milestone(ctx, milestone_title: str):
+    """
+    Comando de Discord para obtener y enviar los issues abiertos que pertenecen a un milestone específico.
+    :param ctx: El contexto del comando de Discord.
+    :param milestone_title: El título del milestone a filtrar.
+    """
+    # Obtener los issues abiertos
+    open_issues = get_open_issues(GITHUB_API_TOKEN=GITHUB_TOKEN)
+
+    # Filtrar los issues por el milestone especificado
+    filtered_issues = filter_issues_by_milestone(open_issues, milestone_title)
+
+    # Verificar si hay issues filtrados
+    if filtered_issues:
+        # Preparar el mensaje con los títulos de los issues filtrados
+        message = f"Issues abiertos del milestone '{milestone_title}':\n"
+        for issue in filtered_issues:
+            title = issue['content']['title']
+            url = issue['content']['url']
+            message += f"- {title}: {url}\n"
+
+        # Enviar el mensaje al canal de Discord
+        await ctx.send(message)
+    else:
+        await ctx.send(f"No hay issues abiertos para el milestone '{milestone_title}'.")
+
+
+@bot.command()
+async def all_issues_by_milestone(ctx, milestone_title: str):
+    """
+    Comando de Discord para obtener y enviar todos los issues (abiertos y cerrados) que pertenecen a un milestone específico.
+    :param ctx: El contexto del comando de Discord.
+    :param milestone_title: El título del milestone a filtrar.
+    """
+    # Obtener todos los issues
+    all_issues = get_all_issues(GITHUB_API_TOKEN=GITHUB_TOKEN)
+
+    # Filtrar los issues por el milestone especificado
+    filtered_issues = filter_issues_by_milestone(all_issues, milestone_title)
+
+    # Verificar si hay issues filtrados
+    if filtered_issues:
+        # Preparar el mensaje con los títulos de los issues filtrados
+        message = f"Todos los issues del milestone '{milestone_title}':\n"
+        for issue in filtered_issues:
+            title = issue['content']['title']
+            url = issue['content']['url']
+            message += f"- {title}: {url}\n"
+
+        # Enviar el mensaje al canal de Discord
+        await ctx.send(message)
+    else:
+        await ctx.send(f"No hay issues para el milestone '{milestone_title}'.")
 
 
 @bot.command()

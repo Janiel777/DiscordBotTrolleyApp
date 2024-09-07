@@ -202,5 +202,20 @@ def get_open_issues(GITHUB_API_TOKEN):
     return open_issues
 
 
+def filter_issues_by_milestone(issues, milestone_title):
+    """
+    Filtra los issues que pertenecen a un milestone específico.
 
+    :param issues: Lista de issues (devueltos por get_all_issues o get_open_issues)
+    :param milestone_title: El título del milestone a filtrar
+    :return: Lista de issues que pertenecen al milestone especificado
+    """
+    filtered_issues = []
+
+    for issue in issues:
+        milestone = issue['content'].get('milestone')
+        if milestone and milestone.get('title') == milestone_title:
+            filtered_issues.append(issue)
+
+    return filtered_issues
 
