@@ -13,7 +13,7 @@ import re
 import pytz  # Para manejo de zona horaria
 import subprocess
 import traceback
-
+from getStatistics import get_repo_issues
 
 app = Flask(__name__)
 
@@ -917,6 +917,21 @@ async def finalizar_reunion(ctx):
         await ctx.send("No hay ninguna reunión activa.")
 
 
+# Comando para obtener los issues del repositorio
+@bot.command()
+async def issues(ctx):
+    # Llamar a la función de getStatistics.py  # Asegúrate de reemplazar esto por tu token
+    issues_data = get_repo_issues(GITHUB_API_TOKEN=GITHUB_TOKEN)
+
+    # Verificar si hubo un error
+    if isinstance(issues_data, str):
+        await ctx.send(f"Error al obtener los issues: {issues_data}")
+    else:
+        # Enviar los primeros 5 issues como ejemplo
+        message = "Issues del repositorio:\n"
+        for issue in issues_data[:5]:  # Muestra los primeros 5 issues
+            message += f"- {issue['title']} (#{issue['number']})\n"
+        await ctx.send(message)
 
 @bot.event
 async def on_ready():
