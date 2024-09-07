@@ -92,23 +92,17 @@ def get_project_items_with_custom_fields(GITHUB_API_TOKEN):
                 }
                 taskType: fieldValueByName(name: "Task Type") {
                   ... on ProjectV2ItemFieldSingleSelectValue {
-                    option {
-                      name
-                    }
+                    name
                   }
                 }
                 priority: fieldValueByName(name: "Priority") {
                   ... on ProjectV2ItemFieldSingleSelectValue {
-                    option {
-                      name
-                    }
+                    name
                   }
                 }
                 difficulty: fieldValueByName(name: "Difficulty") {
                   ... on ProjectV2ItemFieldSingleSelectValue {
-                    option {
-                      name
-                    }
+                    name
                   }
                 }
                 estimate: fieldValueByName(name: "Estimate") {
@@ -128,9 +122,7 @@ def get_project_items_with_custom_fields(GITHUB_API_TOKEN):
                 }
                 iteration: fieldValueByName(name: "Iteration") {
                   ... on ProjectV2ItemFieldSingleSelectValue {
-                    option {
-                      name
-                    }
+                    name
                   }
                 }
               }
