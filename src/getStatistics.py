@@ -49,16 +49,28 @@ def get_repo(GITHUB_API_TOKEN):
 
 
 
-def get_repo_projects_v2(GITHUB_API_TOKEN):
-    # Definir la query GraphQL para obtener los proyectos v2
+def get_project_items_v2(GITHUB_API_TOKEN):
+    # Definir la query GraphQL para obtener los elementos de un proyecto específico
     query = """
     {
-      repository(owner: "uprm-inso4116-2024-2025-s1", name: "semester-project-trolley-tracker-app") {
-        projectsV2(first: 10) {
-          nodes {
-            title
-            number
-            url
+      organization(login: "uprm-inso4116-2024-2025-s1") {
+        projectV2(number: 3) {
+          title
+          items(first: 10) {
+            nodes {
+              content {
+                ... on Issue {
+                  title
+                  url
+                  state
+                }
+                ... on PullRequest {
+                  title
+                  url
+                  merged
+                }
+              }
+            }
           }
         }
       }
@@ -75,6 +87,6 @@ def get_repo_projects_v2(GITHUB_API_TOKEN):
 
     # Verificar si la solicitud fue exitosa
     if response.status_code == 200:
-        return response.json()  # Devolver los proyectos v2 en formato JSON
+        return response.json()  # Devolver los elementos del proyecto en formato JSON
     else:
         return f"Error: {response.status_code}, {response.text}"
