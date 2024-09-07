@@ -13,7 +13,8 @@ import re
 import pytz  # Para manejo de zona horaria
 import subprocess
 import traceback
-from getStatistics import get_repo_issues
+
+from getStatistics import get_repo_issues, get_repo
 
 app = Flask(__name__)
 
@@ -929,8 +930,23 @@ async def issues(ctx):
     else:
         # Enviar los primeros 5 issues como ejemplo
         message = "Issues del repositorio:\n"
-        for issue in issues_data[:5]:  # Muestra los primeros 5 issues
+        for issue in issues_data:  # Muestra los primeros 5 issues
             message += f"- {issue['title']} (#{issue['number']})\n"
+        await ctx.send(message)
+
+
+# Comando para obtener los issues del repositorio
+@bot.command()
+async def repo(ctx):
+    # Llamar a la función de getStatistics.py  # Asegúrate de reemplazar esto por tu token
+    repoData = get_repo(GITHUB_API_TOKEN=GITHUB_TOKEN)
+
+    # Verificar si hubo un error
+    if isinstance(repoData, str):
+        await ctx.send(f"Error al obtener el repo: {repoData}")
+    else:
+        # Enviar los primeros 5 issues como ejemplo
+        message = f"Data del repositorio:\n{repoData}"
         await ctx.send(message)
 
 @bot.event
