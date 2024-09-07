@@ -1176,6 +1176,8 @@ async def milestone_points_with_dk(ctx, milestone_name: str):
     Comando de Discord para obtener el total de puntos con DK para un milestone específico (abiertos y cerrados).
     """
 
+    milestone_start = datetime(2024, 8, 29)  # Placeholder para la fecha de inicio
+    milestone_end = datetime(2024, 9, 20)  # Placeholder para la fecha de fin
     if milestone_name == "Milestone #1":
         # Puedes ajustar estas fechas de inicio y fin de acuerdo con el milestone que estás utilizando
         milestone_start = datetime(2024, 8, 29)  # Placeholder para la fecha de inicio
