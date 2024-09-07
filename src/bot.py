@@ -1153,7 +1153,7 @@ async def projects(ctx):
         await ctx.send("Aquí están los datos del repositorio:", file=discord.File("repo_data.txt"))
 
 
-@bot.command(name='milestone_points_without_dk')
+@bot.command()
 async def milestone_points_without_dk(ctx, milestone_name: str):
     """
     Comando de Discord para calcular los puntos sin DK de todos los issues de un milestone específico.
