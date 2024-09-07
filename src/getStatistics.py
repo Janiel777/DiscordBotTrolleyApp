@@ -374,3 +374,55 @@ def get_milestone_closed_total_points_with_dk(GITHUB_API_TOKEN, milestone_name, 
     total_points_with_dk = issues_total_points_with_dk(closed_issues_before_end, milestone_start, milestone_end)
 
     return total_points_with_dk
+
+
+def get_milestone_average_with_dk(GITHUB_API_TOKEN, milestone_name, milestone_start, milestone_end):
+    """
+    Calcula el promedio de un milestone dividiendo los puntos sumados con DK entre los puntos sumados sin DK para todos los issues (cerrados y abiertos).
+
+    :param GITHUB_API_TOKEN: El token de autenticación para la API de GitHub.
+    :param milestone_name: El nombre del milestone.
+    :param milestone_start: La fecha de inicio del milestone.
+    :param milestone_end: La fecha de fin del milestone.
+    :return: El promedio de puntos con DK sobre puntos sin DK para todos los issues del milestone.
+    """
+    # Obtener el total de puntos con DK para todos los issues (cerrados y abiertos)
+    total_points_with_dk = get_milestone_perfect_total_points_with_dk(GITHUB_API_TOKEN, milestone_name, milestone_start, milestone_end)
+
+    # Obtener el total de puntos sin DK para todos los issues (cerrados y abiertos)
+    total_points_without_dk = get_milestone_perfect_total_points_without_dk(GITHUB_API_TOKEN, milestone_name)
+
+    # Evitar división por cero
+    if total_points_without_dk == 0:
+        return 0
+
+    # Calcular el promedio
+    average_with_dk = total_points_with_dk / total_points_without_dk
+
+    return average_with_dk
+
+
+
+def get_milestone_closed_average_with_dk(GITHUB_API_TOKEN, milestone_name, milestone_start, milestone_end):
+    """
+    Calcula el promedio de un milestone dividiendo los puntos sumados con DK de los issues cerrados entre los puntos sumados sin DK de todos los issues.
+
+    :param GITHUB_API_TOKEN: El token de autenticación para la API de GitHub.
+    :param milestone_name: El nombre del milestone.
+    :param milestone_end: La fecha de fin del milestone.
+    :return: El promedio de puntos con DK sobre puntos sin DK para los issues cerrados del milestone.
+    """
+    # Obtener el total de puntos con DK para los issues cerrados
+    total_points_with_dk_closed = get_milestone_closed_total_points_with_dk(GITHUB_API_TOKEN, milestone_name,milestone_start, milestone_end)
+
+    # Obtener el total de puntos sin DK para todos los issues (cerrados y abiertos)
+    total_points_without_dk = get_milestone_perfect_total_points_without_dk(GITHUB_API_TOKEN, milestone_name)
+
+    # Evitar división por cero
+    if total_points_without_dk == 0:
+        return 0
+
+    # Calcular el promedio
+    average_with_dk_closed = total_points_with_dk_closed / total_points_without_dk
+
+    return average_with_dk_closed

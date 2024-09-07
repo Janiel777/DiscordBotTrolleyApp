@@ -17,7 +17,8 @@ import traceback
 from getStatistics import get_repo_issues, get_repo, get_project_items_with_custom_fields, get_all_issues, \
     get_open_issues, filter_issues_by_milestone, issues_total_points_without_dk, issues_total_points_with_dk, \
     get_closed_issues, get_closed_issues_by_milestone, get_milestone_perfect_total_points_without_dk, \
-    get_milestone_perfect_total_points_with_dk, get_milestone_closed_total_points_with_dk
+    get_milestone_perfect_total_points_with_dk, get_milestone_closed_total_points_with_dk, \
+    get_milestone_average_with_dk, get_milestone_closed_average_with_dk
 
 app = Flask(__name__)
 
@@ -1210,6 +1211,44 @@ async def milestone_closed_points_with_dk(ctx, milestone_name: str):
 
     # Responder en Discord con el resultado
     await ctx.send(f"Total de puntos con DK para los issues cerrados del milestone '{milestone_name}' antes de {milestone_end}: {total_points_with_dk}")
+
+
+@bot.command(name="milestone_average_with_dk")
+async def milestone_average_with_dk(ctx, milestone_name: str):
+    """
+    Comando para calcular el promedio de puntos con DK sobre puntos sin DK para todos los issues (cerrados y abiertos) de un milestone.
+
+    :param ctx: Contexto del comando en Discord.
+    :param milestone_name: El nombre del milestone.
+    """
+    milestone_start = datetime(2024, 8, 29)  # Placeholder para la fecha de inicio del milestone
+    milestone_end = datetime(2024, 9, 20)  # Placeholder para la fecha de fin del milestone
+
+    # Llamar a la función para calcular el promedio con DK de todos los issues
+    average_with_dk = get_milestone_average_with_dk(GITHUB_TOKEN, milestone_name, milestone_start, milestone_end)
+
+    # Enviar el resultado en el canal de Discord
+    await ctx.send(f"El promedio de puntos con DK para el milestone '{milestone_name}' es: {average_with_dk}")
+
+
+@bot.command(name="milestone_closed_average_with_dk")
+async def milestone_closed_average_with_dk(ctx, milestone_name: str):
+    """
+    Comando para calcular el promedio de puntos con DK sobre puntos sin DK solo para los issues cerrados de un milestone.
+
+    :param ctx: Contexto del comando en Discord.
+    :param milestone_name: El nombre del milestone.
+    """
+    milestone_start = datetime(2024, 8, 29)  # Placeholder para la fecha de inicio del milestone
+    milestone_end = datetime(2024, 9, 20)  # Placeholder para la fecha de fin del milestone
+
+    # Llamar a la función para calcular el promedio con DK solo de los issues cerrados
+    average_with_dk_closed = get_milestone_closed_average_with_dk(GITHUB_TOKEN, milestone_name, milestone_start,
+                                                                  milestone_end)
+
+    # Enviar el resultado en el canal de Discord
+    await ctx.send(
+        f"El promedio de puntos con DK para los issues cerrados del milestone '{milestone_name}' es: {average_with_dk_closed}")
 
 @bot.event
 async def on_ready():
