@@ -14,7 +14,8 @@ import pytz  # Para manejo de zona horaria
 import subprocess
 import traceback
 
-from getStatistics import get_repo_issues, get_repo, get_project_items_with_custom_fields
+from getStatistics import get_repo_issues, get_repo, get_project_items_with_custom_fields, get_all_issues, \
+    get_open_issues
 
 app = Flask(__name__)
 
@@ -920,17 +921,34 @@ async def finalizar_reunion(ctx):
 
 # Comando para obtener los issues del repositorio
 @bot.command()
-async def issues(ctx):
+async def all_issues(ctx):
     # Llamar a la función de getStatistics.py  # Asegúrate de reemplazar esto por tu token
-    issues_data = get_repo_issues(GITHUB_API_TOKEN=GITHUB_TOKEN)
+    issues = get_all_issues(GITHUB_API_TOKEN=GITHUB_TOKEN)
 
     # Verificar si hubo un error
-    if isinstance(issues_data, str):
-        await ctx.send(f"Error al obtener los issues: {issues_data}")
+    if isinstance(issues, str):
+        await ctx.send(f"Error al obtener los issues: {issues}")
     else:
         # Enviar los primeros 5 issues como ejemplo
-        message = "Issues del repositorio:\n"
-        for issue in issues_data:  # Muestra los primeros 5 issues
+        message = "Issues cerrados y abiertos del repositorio:\n"
+        for issue in issues:  # Muestra los primeros 5 issues
+            message += f"- {issue['title']} (#{issue['number']})\n"
+        await ctx.send(message)
+
+
+# Comando para obtener los issues del repositorio
+@bot.command()
+async def open_issues(ctx):
+    # Llamar a la función de getStatistics.py  # Asegúrate de reemplazar esto por tu token
+    issues = get_open_issues(GITHUB_API_TOKEN=GITHUB_TOKEN)
+
+    # Verificar si hubo un error
+    if isinstance(issues, str):
+        await ctx.send(f"Error al obtener los issues: {issues}")
+    else:
+        # Enviar los primeros 5 issues como ejemplo
+        message = "Issues abiertos del repositorio:\n"
+        for issue in issues:  # Muestra los primeros 5 issues
             message += f"- {issue['title']} (#{issue['number']})\n"
         await ctx.send(message)
 

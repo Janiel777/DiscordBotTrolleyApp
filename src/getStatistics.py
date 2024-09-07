@@ -170,4 +170,37 @@ def dk_penalty(milestone_start, milestone_end, issue_created):
     return penalty
 
 
+def get_all_issues(GITHUB_API_TOKEN):
+    """
+    Llama a get_project_items_with_custom_fields y devuelve todos los issues (cerrados o abiertos).
+
+    :param GITHUB_API_TOKEN: El token de autenticación para la API de GitHub
+    :return: Lista de todos los issues (cerrados y abiertos)
+    """
+    # Obtener los datos de los items del proyecto
+    issues_data = get_project_items_with_custom_fields(GITHUB_API_TOKEN)
+
+    # Extraer todos los issues desde el campo 'nodes'
+    all_issues = issues_data['data']['organization']['projectsV2']['nodes'][0]['items']['nodes']
+
+    return all_issues
+
+
+def get_open_issues(GITHUB_API_TOKEN):
+    """
+    Llama a get_project_items_with_custom_fields y devuelve solo los issues abiertos.
+
+    :param GITHUB_API_TOKEN: El token de autenticación para la API de GitHub
+    :return: Lista de issues abiertos
+    """
+    # Obtener todos los issues del proyecto
+    all_issues = get_all_issues(GITHUB_API_TOKEN)
+
+    # Filtrar los issues abiertos (que no estén cerrados)
+    open_issues = [issue for issue in all_issues if not issue['content'].get('closed', False)]
+
+    return open_issues
+
+
+
 
