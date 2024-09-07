@@ -917,6 +917,70 @@ async def finalizar_reunion(ctx):
         await ctx.send("No hay ninguna reunión activa.")
 
 
+# Función para obtener las issues del project board
+def get_issues_from_project_board(repo_owner, repo_name, github_token):
+    headers = {
+        "Authorization": f"token {github_token}",
+        "Accept": "application/vnd.github.inertia-preview+json"
+    }
+
+    url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/projects"
+
+    # Primero obtenemos los proyectos del repositorio
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        projects = response.json()
+
+        # Obtenemos el ID del primer project board
+        if projects:
+            project_id = projects[0]['id']  # Asumiendo que queremos el primer project board
+            columns_url = f"https://api.github.com/projects/{project_id}/columns"
+
+            # Obtenemos las columnas del project board
+            columns_response = requests.get(columns_url, headers=headers)
+            if columns_response.status_code == 200:
+                columns = columns_response.json()
+
+                # Aquí iteramos sobre las columnas para obtener las issues
+                for column in columns:
+                    column_id = column['id']
+                    cards_url = f"https://api.github.com/projects/columns/{column_id}/cards"
+                    cards_response = requests.get(cards_url, headers=headers)
+                    if cards_response.status_code == 200:
+                        cards = cards_response.json()
+                        for card in cards:
+                            if card.get('content_url'):
+                                issue_response = requests.get(card['content_url'], headers=headers)
+                                if issue_response.status_code == 200:
+                                    issue = issue_response.json()
+                                    print(f"Issue: {issue['title']} - {issue['html_url']}")
+                            else:
+                                print("Tarjeta sin issue asociada")
+            else:
+                print(f"Error obteniendo columnas: {columns_response.status_code}")
+        else:
+            print("No se encontraron project boards.")
+    else:
+        print(f"Error obteniendo proyectos: {response.status_code}")
+
+
+# Comando de Discord para obtener issues del project board
+@bot.command(name="obtener_issues")
+async def obtener_issues(ctx):
+    try:
+        # Variables necesarias para la API
+        repo_owner = 'uprm-inso4116-2024-2025-s1'
+        repo_name = 'semester-project-trolley-tracker-app'
+        github_token = os.getenv('GITHUB_TOKEN')
+
+        # Llamamos a la función para obtener las issues
+        get_issues_from_project_board(repo_owner, repo_name, github_token)
+
+        await ctx.send("Issues del project board obtenidas. Revisa la consola.")
+    except Exception as e:
+        await ctx.send(f"Error obteniendo issues: {str(e)}")
+
 @bot.event
 async def on_ready():
     print(f'{bot.user} está conectado a Discord!')
