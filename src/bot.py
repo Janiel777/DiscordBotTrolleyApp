@@ -1161,11 +1161,9 @@ async def milestone_points_without_dk(ctx, milestone_name: str):
     :param ctx: El contexto del comando en Discord.
     :param milestone_name: El nombre del milestone a filtrar.
     """
-    # Token de autenticación
-    GITHUB_TOKEN = os.getenv("GITHUB_API_TOKEN")
 
     # Llamar a la función para obtener los puntos sin DK
-    total_points_without_dk = get_milestone_total_points_without_dk(GITHUB_TOKEN, milestone_name)
+    total_points_without_dk = get_milestone_total_points_without_dk(GITHUB_API_TOKEN=GITHUB_TOKEN, milestone_name=milestone_name)
 
     # Responder en Discord con el resultado
     await ctx.send(f"Total de puntos sin DK para el milestone '{milestone_name}': {total_points_without_dk}")
