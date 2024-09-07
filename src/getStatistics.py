@@ -156,36 +156,17 @@ def get_project_items_with_custom_fields(GITHUB_API_TOKEN):
         return f"Error: {response.status_code}, {response.text}"
 
 
+# Función para calcular la penalización (dk)
 def dk_penalty(milestone_start, milestone_end, issue_created):
-    """
-    Calcula la penalización de puntos (dk) basado en el retraso en la creación del issue.
-
-    :param milestone_start: Fecha de inicio del milestone (datetime).
-    :param milestone_end: Fecha de fin del milestone (datetime).
-    :param issue_created: Fecha en que se creó el issue (datetime).
-    :return: Penalización en puntos (float).
-    """
-    # Duración total del milestone en días
     duration = (milestone_end - milestone_start).days
-
-    # Si el issue se creó después del final del milestone, considera que se creó el último día del milestone
     if issue_created > milestone_end:
         issue_created = milestone_end
-
-    # Días de retraso en la creación del issue desde el inicio del milestone
     issue_lateness = max(0, (issue_created - milestone_start).days)
-
-    # Base de decay, ajustada para reflejar un efecto de penalización progresiva
     decay_base = 1 + 1 / duration
-
-    # Cálculo de la diferencia para normalizar el decay
     difference = pow(decay_base, 3 * duration) - pow(decay_base, 0)
-    final_decrease = 0.7  # Porcentaje de penalización máximo
-
-    # Cálculo de la penalización final (cuanto más tarde se crea el issue, mayor es la penalización)
+    final_decrease = 0.7  # Penalty max 70%
     translate = 1 + final_decrease / difference
     penalty = max(0, translate - final_decrease * pow(decay_base, 3 * issue_lateness) / difference)
-
     return penalty
 
 
@@ -196,25 +177,32 @@ def calculate_total_points_with_dk(issues):
 
     # Iterar sobre todos los issues
     for issue in issues:
-        estimate = issue['estimate']['number']
+        # Asegurarnos de que 'estimate' exista y sea un diccionario
+        if 'estimate' in issue:
+            estimate = issue['estimate']['number']
+        else:
+            # Si no hay estimado, continuamos al siguiente issue
+            continue
+
         created_at = datetime.strptime(issue['content']['createdAt'], "%Y-%m-%dT%H:%M:%SZ")
         milestone = issue['content'].get('milestone', None)
 
-        # Si el issue no tiene un milestone o si faltan fechas, ignorar el issue
-        if not milestone or 'title' not in milestone:
-            continue
+        # Verificar si tiene un milestone con un título
+        if milestone and 'title' in milestone:
+            milestone_title = milestone['title']
 
-        # Obtener las fechas de inicio y final del milestone
-        milestone_title = milestone['title']
-
-        # En este caso, obtenemos las fechas específicas de cada milestone (ajústalo según cómo las almacenes)
-        if milestone_title == "Milestone #1":
-            milestone_start = datetime(2024, 8, 29)
-            milestone_end = datetime(2024, 9, 20)
-        elif milestone_title == "Milestone #2":
-            milestone_start = datetime(2024, 9, 21)
-            milestone_end = datetime(2024, 10, 20)
+            # Obtener las fechas de inicio y fin del milestone basadas en su título
+            if milestone_title == "Milestone #1":
+                milestone_start = datetime(2024, 8, 29)
+                milestone_end = datetime(2024, 9, 20)
+            elif milestone_title == "Milestone #2":
+                milestone_start = datetime(2024, 9, 21)
+                milestone_end = datetime(2024, 10, 20)
+            else:
+                # Si el milestone no coincide con los que conocemos, saltamos este issue
+                continue
         else:
+            # Si no tiene un milestone válido, saltamos este issue
             continue
 
         # Calcular puntaje sin aplicar dk
@@ -232,7 +220,9 @@ def calculate_total_points_with_dk(issues):
 
 # Llamada a la función get_project_items_with_custom_fields
 def issuesDK(GITHUB_API_TOKEN):
-    issues = get_project_items_with_custom_fields(GITHUB_API_TOKEN)
+    issues_data = get_project_items_with_custom_fields(GITHUB_API_TOKEN)
+    # Extraer los issues desde el campo 'nodes'
+    issues = issues_data['data']['organization']['projectsV2']['nodes'][0]['items']['nodes']
 
     # Calcular los puntos totales con y sin dk
     total_with_dk, total_without_dk, average_dk = calculate_total_points_with_dk(issues)
