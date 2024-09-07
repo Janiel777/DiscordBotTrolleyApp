@@ -49,8 +49,8 @@ def get_repo(GITHUB_API_TOKEN):
 
 
 
-def get_project_items_v2(GITHUB_API_TOKEN):
-    # Definir la query GraphQL para obtener los elementos de un proyecto específico
+def get_project_items_with_details(GITHUB_API_TOKEN):
+    # Definir la query GraphQL para obtener los elementos de un proyecto específico con detalles adicionales
     query = """
     {
       organization(login: "uprm-inso4116-2024-2025-s1") {
@@ -63,11 +63,25 @@ def get_project_items_v2(GITHUB_API_TOKEN):
                   title
                   url
                   state
-                }
-                ... on PullRequest {
-                  title
-                  url
-                  merged
+                  assignees(first: 5) {
+                    nodes {
+                      login
+                    }
+                  }
+                  fields(first: 10) {
+                    nodes {
+                      ... on ProjectV2ItemFieldSingleSelectValue {
+                        name
+                        option {
+                          name
+                        }
+                      }
+                      ... on ProjectV2ItemFieldNumberValue {
+                        name
+                        number
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -87,6 +101,6 @@ def get_project_items_v2(GITHUB_API_TOKEN):
 
     # Verificar si la solicitud fue exitosa
     if response.status_code == 200:
-        return response.json()  # Devolver los elementos del proyecto en formato JSON
+        return response.json()  # Devolver los detalles de los elementos del proyecto en formato JSON
     else:
         return f"Error: {response.status_code}, {response.text}"
