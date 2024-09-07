@@ -235,7 +235,9 @@ def perfect_milestone_grade_all_issues_closed(GITHUB_API_TOKEN):
     issues = issues_data['data']['organization']['projectsV2']['nodes'][0]['items']['nodes']
 
     # Calcular los puntos totales con y sin dk
-    total_with_dk, total_without_dk, average_dk = calculate_total_points_with_dk(issues)
+    total_with_dk = calculate_total_points_with_dk(issues)
+    total_without_dk= calculate_total_points_without_dk(issues)
+    average_dk = total_with_dk/total_without_dk
 
     # Imprimir los resultados
     print(f"Total con DK: {total_with_dk}")
