@@ -49,8 +49,7 @@ def get_repo(GITHUB_API_TOKEN):
 
 
 
-def get_project_items_with_details(GITHUB_API_TOKEN):
-    # Definir la query GraphQL para obtener los elementos de un proyecto específico con detalles adicionales
+def get_project_items_with_custom_fields(GITHUB_API_TOKEN):
     query = """
     {
       organization(login: "uprm-inso4116-2024-2025-s1") {
@@ -68,19 +67,23 @@ def get_project_items_with_details(GITHUB_API_TOKEN):
                       login
                     }
                   }
-                  fields(first: 10) {
-                    nodes {
-                      ... on ProjectV2ItemFieldSingleSelectValue {
-                        name
-                        option {
-                          name
-                        }
-                      }
-                      ... on ProjectV2ItemFieldNumberValue {
-                        name
-                        number
-                      }
+                }
+              }
+              fieldValues(first: 10) {
+                nodes {
+                  ... on ProjectV2ItemFieldSingleSelectValue {
+                    field {
+                      name
                     }
+                    option {
+                      name
+                    }
+                  }
+                  ... on ProjectV2ItemFieldNumberValue {
+                    field {
+                      name
+                    }
+                    number
                   }
                 }
               }
@@ -91,7 +94,6 @@ def get_project_items_with_details(GITHUB_API_TOKEN):
     }
     """
 
-    # Hacer la solicitud POST a la API de GitHub GraphQL
     url = "https://api.github.com/graphql"
     headers = {
         "Authorization": f"Bearer {GITHUB_API_TOKEN}",
@@ -99,8 +101,8 @@ def get_project_items_with_details(GITHUB_API_TOKEN):
     }
     response = requests.post(url, json={"query": query}, headers=headers)
 
-    # Verificar si la solicitud fue exitosa
     if response.status_code == 200:
         return response.json()  # Devolver los detalles de los elementos del proyecto en formato JSON
     else:
         return f"Error: {response.status_code}, {response.text}"
+
