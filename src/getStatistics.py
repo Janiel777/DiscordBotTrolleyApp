@@ -236,3 +236,33 @@ def issues_total_points_without_dk(issues):
         total_points += estimate
 
     return total_points
+
+
+def issues_total_points_with_dk(issues, milestone_start, milestone_end):
+    """
+    Calcula la suma total de los puntos (Estimate) para una lista de issues aplicando DK individualmente.
+
+    :param issues: Lista de issues (abiertos, cerrados o ambos)
+    :param milestone_start: Fecha de inicio del milestone (datetime)
+    :param milestone_end: Fecha de fin del milestone (datetime)
+    :return: La suma total de los puntos Estimate con DK aplicado
+    """
+    total_points_with_dk = 0
+
+    # Iterar sobre los issues y sumar los puntos del campo 'Estimate' aplicando DK
+    for issue in issues:
+        # Obtener el valor de Estimate
+        estimate = issue.get('estimate', {}).get('number', 0)
+
+        # Obtener la fecha de creación del issue
+        created_at = issue['content'].get('createdAt')
+        if created_at:
+            created_at = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%SZ")
+
+            # Calcular DK para este issue
+            dk = dk_penalty(milestone_start, milestone_end, created_at)
+
+            # Sumar los puntos con DK aplicado
+            total_points_with_dk += estimate * dk
+
+    return total_points_with_dk
