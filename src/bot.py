@@ -14,7 +14,7 @@ import pytz  # Para manejo de zona horaria
 import subprocess
 import traceback
 
-from getStatistics import get_repo_issues, get_repo
+from getStatistics import get_repo_issues, get_repo, get_repo_projects
 
 app = Flask(__name__)
 
@@ -947,6 +947,22 @@ async def repo(ctx):
         # Escribir los datos en un archivo de texto
         with open("repo_data.txt", "w", encoding="utf-8") as file:
             file.write(str(repoData))
+
+        # Enviar el archivo al canal
+        await ctx.send("Aquí están los datos del repositorio:", file=discord.File("repo_data.txt"))
+
+@bot.command()
+async def projects(ctx):
+    # Llamar a la función de getStatistics.py
+    repoProjects = get_repo_projects(GITHUB_API_TOKEN=GITHUB_TOKEN)
+
+    # Verificar si hubo un error
+    if isinstance(repoProjects, str):
+        await ctx.send(f"Error al obtener el repo: {repoProjects}")
+    else:
+        # Escribir los datos en un archivo de texto
+        with open("repo_data.txt", "w", encoding="utf-8") as file:
+            file.write(str(repoProjects))
 
         # Enviar el archivo al canal
         await ctx.send("Aquí están los datos del repositorio:", file=discord.File("repo_data.txt"))
