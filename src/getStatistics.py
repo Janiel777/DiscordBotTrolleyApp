@@ -202,6 +202,22 @@ def get_open_issues(GITHUB_API_TOKEN):
     return open_issues
 
 
+def get_closed_issues(GITHUB_API_TOKEN):
+    """
+    Llama a get_project_items_with_custom_fields y devuelve solo los issues cerrados.
+
+    :param GITHUB_API_TOKEN: El token de autenticación para la API de GitHub
+    :return: Lista de issues cerrados
+    """
+    # Obtener todos los issues del proyecto
+    all_issues = get_all_issues(GITHUB_API_TOKEN)
+
+    # Filtrar los issues cerrados
+    closed_issues = [issue for issue in all_issues if issue['content'].get('closed', False)]
+
+    return closed_issues
+
+
 def filter_issues_by_milestone(issues, milestone_title):
     """
     Filtra los issues que pertenecen a un milestone específico.
@@ -218,6 +234,23 @@ def filter_issues_by_milestone(issues, milestone_title):
             filtered_issues.append(issue)
 
     return filtered_issues
+
+
+def get_closed_issues_by_milestone(GITHUB_API_TOKEN, milestone_title):
+    """
+    Filtra los issues cerrados que pertenecen a un milestone específico.
+
+    :param GITHUB_API_TOKEN: El token de autenticación para la API de GitHub
+    :param milestone_title: El título del milestone a filtrar
+    :return: Lista de issues cerrados que pertenecen al milestone especificado
+    """
+    # Obtener todos los issues cerrados
+    closed_issues = get_closed_issues(GITHUB_API_TOKEN)
+
+    # Filtrar los issues cerrados por el milestone especificado
+    filtered_closed_issues = filter_issues_by_milestone(closed_issues, milestone_title)
+
+    return filtered_closed_issues
 
 
 

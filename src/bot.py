@@ -15,7 +15,8 @@ import subprocess
 import traceback
 
 from getStatistics import get_repo_issues, get_repo, get_project_items_with_custom_fields, get_all_issues, \
-    get_open_issues, filter_issues_by_milestone, issues_total_points_without_dk, issues_total_points_with_dk
+    get_open_issues, filter_issues_by_milestone, issues_total_points_without_dk, issues_total_points_with_dk, \
+    get_closed_issues, get_closed_issues_by_milestone
 
 app = Flask(__name__)
 
@@ -962,6 +963,54 @@ async def open_issues(ctx):
         await ctx.send(message)
     else:
         await ctx.send("No hay issues abiertos.")
+
+
+@bot.command()
+async def closed_issues(ctx):
+    """
+    Comando de Discord para obtener y enviar todos los issues cerrados del proyecto.
+    """
+    # Obtener todos los issues cerrados
+    closed_issues = get_closed_issues(GITHUB_API_TOKEN=GITHUB_TOKEN)
+
+    # Verificar si hay issues cerrados
+    if closed_issues:
+        # Preparar el mensaje con los títulos de los issues cerrados
+        message = "Issues cerrados del proyecto:\n"
+        for issue in closed_issues:
+            title = issue['content']['title']
+            url = issue['content']['url']
+            message += f"- {title}: {url}\n"
+
+        # Enviar el mensaje al canal de Discord
+        await ctx.send(message)
+    else:
+        await ctx.send("No se encontraron issues cerrados.")
+
+@bot.command()
+async def closed_issues_by_milestone(ctx, milestone_title: str):
+    """
+    Comando de Discord para obtener y enviar los issues cerrados que pertenecen a un milestone específico.
+    :param ctx: El contexto del comando de Discord.
+    :param milestone_title: El título del milestone a filtrar.
+    """
+    # Obtener los issues cerrados filtrados por milestone
+    closed_issues = get_closed_issues_by_milestone(GITHUB_API_TOKEN=GITHUB_TOKEN, milestone_title=milestone_title)
+
+    # Verificar si hay issues filtrados
+    if closed_issues:
+        # Preparar el mensaje con los títulos de los issues filtrados
+        message = f"Issues cerrados del milestone '{milestone_title}':\n"
+        for issue in closed_issues:
+            title = issue['content']['title']
+            url = issue['content']['url']
+            message += f"- {title}: {url}\n"
+
+        # Enviar el mensaje al canal de Discord
+        await ctx.send(message)
+    else:
+        await ctx.send(f"No se encontraron issues cerrados para el milestone '{milestone_title}'.")
+
 
 @bot.command()
 async def open_issues_by_milestone(ctx, milestone_title: str):
