@@ -15,7 +15,7 @@ import subprocess
 import traceback
 
 from getStatistics import get_repo_issues, get_repo, get_project_items_with_custom_fields, get_all_issues, \
-    get_open_issues, filter_issues_by_milestone, issues_total_points_without_dk, issues_total_points_with_dk, \
+    get_open_issues, filter_issues_by_iteration, issues_total_points_without_dk, issues_total_points_with_dk, \
     get_closed_issues, get_closed_issues_by_milestone
 
 app = Flask(__name__)
@@ -1023,7 +1023,7 @@ async def open_issues_by_milestone(ctx, milestone_title: str):
     open_issues = get_open_issues(GITHUB_API_TOKEN=GITHUB_TOKEN)
 
     # Filtrar los issues por el milestone especificado
-    filtered_issues = filter_issues_by_milestone(open_issues, milestone_title)
+    filtered_issues = filter_issues_by_iteration(open_issues, milestone_title)
 
     # Verificar si hay issues filtrados
     if filtered_issues:
@@ -1051,7 +1051,7 @@ async def all_issues_by_milestone(ctx, milestone_title: str):
     all_issues = get_all_issues(GITHUB_API_TOKEN=GITHUB_TOKEN)
 
     # Filtrar los issues por el milestone especificado
-    filtered_issues = filter_issues_by_milestone(all_issues, milestone_title)
+    filtered_issues = filter_issues_by_iteration(all_issues, milestone_title)
 
     # Verificar si hay issues filtrados
     if filtered_issues:
@@ -1079,7 +1079,7 @@ async def milestone_points_without_dk(ctx, milestone_title: str):
     all_issues = get_all_issues(GITHUB_API_TOKEN=GITHUB_TOKEN)
 
     # Filtrar los issues por el milestone especificado
-    milestone_issues = filter_issues_by_milestone(all_issues, milestone_title)
+    milestone_issues = filter_issues_by_iteration(all_issues, milestone_title)
 
     # Verificar si hay issues filtrados
     if milestone_issues:
@@ -1107,7 +1107,7 @@ async def milestone_points_with_dk(ctx, milestone_title: str):
     all_issues = get_all_issues(GITHUB_API_TOKEN=GITHUB_TOKEN)
 
     # Filtrar los issues por el milestone especificado
-    milestone_issues = filter_issues_by_milestone(all_issues, milestone_title)
+    milestone_issues = filter_issues_by_iteration(all_issues, milestone_title)
 
     # Verificar si hay issues filtrados
     if milestone_issues:
