@@ -460,7 +460,8 @@ def group_issues_by_assignee(issues):
 
 def calculate_individual_grades(GITHUB_API_TOKEN, milestone_name, milestone_start, milestone_end):
     """
-    Calcula las notas individuales de los asignados y la nota final después de multiplicar por la nota del milestone.
+    Calcula las notas individuales de los asignados basadas en la contribución en puntos en relación con el promedio
+    esperado de puntos por persona, y luego multiplica por la nota del milestone.
 
     :param GITHUB_API_TOKEN: El token de autenticación para la API de GitHub.
     :param milestone_name: El nombre del milestone.
@@ -474,6 +475,15 @@ def calculate_individual_grades(GITHUB_API_TOKEN, milestone_name, milestone_star
     # Agrupar los issues por asignado
     assignee_issues = group_issues_by_assignee(milestone_issues)
 
+    # Calcular el total de puntos sin DK para todos los issues
+    total_points_without_dk = issues_total_points_without_dk(milestone_issues)
+
+    # Calcular el número de personas involucradas
+    num_personas = len(assignee_issues)
+
+    # Calcular los puntos esperados por persona
+    puntos_esperados_por_persona = total_points_without_dk / num_personas if num_personas > 0 else 0
+
     # Obtener la nota perfecta del milestone (todos los issues con DK)
     milestone_grade = get_milestone_average_with_dk(GITHUB_API_TOKEN, milestone_name, milestone_start, milestone_end)
 
@@ -481,12 +491,11 @@ def calculate_individual_grades(GITHUB_API_TOKEN, milestone_name, milestone_star
 
     # Calcular las notas individuales para cada asignado
     for assignee, issues in assignee_issues.items():
-        total_without_dk = issues_total_points_without_dk(issues)
         total_with_dk = issues_total_points_with_dk(issues, milestone_start, milestone_end)
 
         # Evitar división por cero
-        if total_without_dk > 0:
-            individual_grade = total_with_dk / total_without_dk
+        if puntos_esperados_por_persona > 0:
+            individual_grade = total_with_dk / puntos_esperados_por_persona
         else:
             individual_grade = 0
 
