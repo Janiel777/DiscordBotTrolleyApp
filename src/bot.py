@@ -14,7 +14,7 @@ import pytz  # Para manejo de zona horaria
 import subprocess
 import traceback
 
-from getStatistics import get_repo_issues, get_repo, get_repo_projects_v2
+from getStatistics import get_repo_issues, get_repo, get_project_items_v2
 
 app = Flask(__name__)
 
@@ -954,7 +954,7 @@ async def repo(ctx):
 @bot.command()
 async def projects(ctx):
     # Llamar a la función de getStatistics.py
-    repoProjects = get_repo_projects_v2(GITHUB_API_TOKEN=GITHUB_TOKEN)
+    repoProjects = get_project_items_v2(GITHUB_API_TOKEN=GITHUB_TOKEN)
 
     # Verificar si hubo un error
     if isinstance(repoProjects, str):
