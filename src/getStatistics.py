@@ -295,7 +295,7 @@ def issues_total_points_with_dk(issues, milestone_start, milestone_end):
     return total_points_with_dk
 
 
-def get_milestone_total_points_without_dk(GITHUB_API_TOKEN, milestone_name):
+def get_milestone_perfect_total_points_without_dk(GITHUB_API_TOKEN, milestone_name):
     """
     Calcula el total de puntos sin DK para todos los issues (abiertos y cerrados) de un milestone específico.
 
@@ -315,7 +315,7 @@ def get_milestone_total_points_without_dk(GITHUB_API_TOKEN, milestone_name):
     return total_points_without_dk
 
 
-def get_milestone_total_points_with_dk(GITHUB_API_TOKEN, milestone_name, milestone_start, milestone_end):
+def get_milestone_perfect_total_points_with_dk(GITHUB_API_TOKEN, milestone_name, milestone_start, milestone_end):
     """
     Calcula el total de puntos con DK para todos los issues (abiertos y cerrados) de un milestone específico.
 
@@ -333,5 +333,44 @@ def get_milestone_total_points_with_dk(GITHUB_API_TOKEN, milestone_name, milesto
 
     # Calcular los puntos con DK
     total_points_with_dk = issues_total_points_with_dk(milestone_issues, milestone_start, milestone_end)
+
+    return total_points_with_dk
+
+
+def filter_closed_issues_before_date(issues, target_date):
+    """
+    Filtra los issues cerrados que fueron cerrados antes de una fecha específica.
+
+    :param issues: Lista de issues cerrados.
+    :param target_date: Fecha límite para el filtro (datetime).
+    :return: Lista de issues cerrados antes de la fecha especificada.
+    """
+    # Filtrar los issues que fueron cerrados antes de la fecha especificada
+    filtered_issues = [issue for issue in issues if
+                       datetime.strptime(issue['content']['closedAt'], "%Y-%m-%dT%H:%M:%SZ") < target_date]
+
+    return filtered_issues
+
+
+def get_milestone_closed_total_points_with_dk(GITHUB_API_TOKEN, milestone_name, milestone_end):
+    """
+    Calcula el total de puntos con DK para todos los issues cerrados antes de la fecha de fin del milestone.
+
+    :param GITHUB_API_TOKEN: El token de autenticación para la API de GitHub.
+    :param milestone_name: El nombre del milestone a filtrar.
+    :param milestone_end: La fecha de fin del milestone.
+    :return: Total de puntos con DK para los issues cerrados antes de la fecha límite del milestone.
+    """
+    # Obtener todos los issues cerrados
+    closed_issues = get_closed_issues(GITHUB_API_TOKEN)
+
+    # Filtrar los issues por el milestone
+    milestone_issues = filter_issues_by_milestone(closed_issues, milestone_name)
+
+    # Filtrar los issues cerrados que fueron cerrados antes de la fecha de fin del milestone
+    closed_issues_before_end = filter_closed_issues_before_date(milestone_issues, milestone_end)
+
+    # Calcular los puntos con DK para esos issues cerrados
+    total_points_with_dk = issues_total_points_with_dk(closed_issues_before_end, milestone_end, milestone_end)
 
     return total_points_with_dk

@@ -16,8 +16,8 @@ import traceback
 
 from getStatistics import get_repo_issues, get_repo, get_project_items_with_custom_fields, get_all_issues, \
     get_open_issues, filter_issues_by_milestone, issues_total_points_without_dk, issues_total_points_with_dk, \
-    get_closed_issues, get_closed_issues_by_milestone, get_milestone_total_points_without_dk, \
-    get_milestone_total_points_with_dk
+    get_closed_issues, get_closed_issues_by_milestone, get_milestone_perfect_total_points_without_dk, \
+    get_milestone_perfect_total_points_with_dk, get_milestone_closed_total_points_with_dk
 
 app = Flask(__name__)
 
@@ -1164,7 +1164,7 @@ async def milestone_points_without_dk(ctx, milestone_name: str):
     """
 
     # Llamar a la función para obtener los puntos sin DK
-    total_points_without_dk = get_milestone_total_points_without_dk(GITHUB_API_TOKEN=GITHUB_TOKEN, milestone_name=milestone_name)
+    total_points_without_dk = get_milestone_perfect_total_points_without_dk(GITHUB_API_TOKEN=GITHUB_TOKEN, milestone_name=milestone_name)
 
     # Responder en Discord con el resultado
     await ctx.send(f"Total de puntos sin DK para el milestone '{milestone_name}': {total_points_without_dk}")
@@ -1183,11 +1183,29 @@ async def milestone_points_with_dk(ctx, milestone_name: str):
         milestone_start = datetime(2024, 8, 29)  # Placeholder para la fecha de inicio
         milestone_end = datetime(2024, 9, 20)  # Placeholder para la fecha de fin
 
-    total_points_with_dk = get_milestone_total_points_with_dk(GITHUB_TOKEN, milestone_name, milestone_start,
+    total_points_with_dk = get_milestone_perfect_total_points_with_dk(GITHUB_TOKEN, milestone_name, milestone_start,
                                                               milestone_end)
 
     await ctx.send(f"Total de puntos con DK para {milestone_name}: {total_points_with_dk}")
 
+
+@bot.command(name="milestone_closed_points_with_dk")
+async def milestone_closed_points_with_dk(ctx, milestone_name: str):
+    """
+    Comando de Discord para obtener el total de puntos con DK para todos los issues cerrados antes de la fecha de fin del milestone.
+
+    :param ctx: El contexto del comando en Discord.
+    :param milestone_name: El nombre del milestone a filtrar.
+    """
+
+    # Puedes ajustar estas fechas de inicio y fin de acuerdo con el milestone que estás utilizando
+    milestone_end = datetime(2024, 9, 20)  # Placeholder para la fecha de fin del milestone
+
+    # Llamar a la función para obtener los puntos con DK para los issues cerrados antes de la fecha límite
+    total_points_with_dk = get_milestone_closed_total_points_with_dk(GITHUB_TOKEN, milestone_name, milestone_end)
+
+    # Responder en Discord con el resultado
+    await ctx.send(f"Total de puntos con DK para los issues cerrados del milestone '{milestone_name}' antes de {milestone_end}: {total_points_with_dk}")
 
 @bot.event
 async def on_ready():
