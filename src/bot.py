@@ -1262,9 +1262,14 @@ async def individual_grades(ctx, milestone_name: str):
     # Calcular el total de puntos de todos los issues
     total_points = issues_total_points_without_dk(milestone_issues)
 
+    # Calcular el promedio de puntos esperado por persona (en base a los puntos totales)
+    num_personas = len(group_issues_by_assignee(milestone_issues))  # Asumimos que cada persona tiene al menos un issue
+    puntos_esperados_por_persona = total_points / num_personas
+
     # Preparar el mensaje con las notas
     grade_message = f"Resumen del milestone '{milestone_name}':\n"
     grade_message += f"Total de puntos en todos los issues: {total_points:.2f}\n"
+    grade_message += f"Promedio de puntos esperado por persona: {puntos_esperados_por_persona:.2f}\n"
     grade_message += f"Nota del milestone (todos los issues con DK): {milestone_average:.2f}\n\n"
 
     # Agrupar los issues por asignado
@@ -1277,12 +1282,15 @@ async def individual_grades(ctx, milestone_name: str):
         issue_points = [issue['estimate']['number'] for issue in assignee_issues_list]
         total_issue_points = sum(issue_points)
 
+        # Calcular la contribución individual y la nota antes de multiplicar por el milestone
+        contribucion_individual = total_issue_points / puntos_esperados_por_persona
+
         grade_message += (f"{assignee}:\n"
                           f"  - Issues asignados: {num_issues}\n"
                           f"  - Puntos por issue: {issue_points}\n"
                           f"  - Puntos totales: {total_issue_points:.2f}\n"
-                          f"  - Nota individual sin multiplicar: {individual_grade:.2f}\n"
-                          f"  - Nota final (después de multiplicar por la del milestone): {final_grade:.2f}\n\n")
+                          f"  - Nota individual antes del milestone: {contribucion_individual:.2f}\n"
+                          f"  - Nota final (después de multiplicar por la del milestone): {contribucion_individual * milestone_average:.2f}\n\n")
 
     # Enviar el mensaje al canal de Discord
     await ctx.send(grade_message)
