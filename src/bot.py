@@ -1234,10 +1234,6 @@ async def milestone_grade(ctx, milestone_name: str):
                    f"El promedio de puntos con DK con los issues cerrados actuales para el milestone '{milestone_name}' es: {average_with_dk_closed}")
 
 
-    # Enviar el resultado en el canal de Discord
-    await ctx.send(
-        f"El promedio de puntos con DK para los issues cerrados del milestone '{milestone_name}' es: {average_with_dk_closed}")
-
 @bot.event
 async def on_ready():
     print(f'{bot.user} está conectado a Discord!')
