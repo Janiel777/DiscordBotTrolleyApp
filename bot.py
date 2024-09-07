@@ -924,7 +924,7 @@ def get_issues_from_project_board(repo_owner, repo_name, github_token):
         "Accept": "application/vnd.github.inertia-preview+json"
     }
 
-    url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/projects"
+    url = f"https://api.github.com/orgs/{repo_owner}/projects"
 
     # Primero obtenemos los proyectos del repositorio
     response = requests.get(url, headers=headers)
