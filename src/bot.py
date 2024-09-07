@@ -15,7 +15,7 @@ import subprocess
 import traceback
 
 from getStatistics import get_repo_issues, get_repo, get_project_items_with_custom_fields, get_all_issues, \
-    get_open_issues, filter_issues_by_milestone
+    get_open_issues, filter_issues_by_milestone, issues_total_points_without_dk
 
 app = Flask(__name__)
 
@@ -1017,6 +1017,30 @@ async def all_issues_by_milestone(ctx, milestone_title: str):
         await ctx.send(message)
     else:
         await ctx.send(f"No hay issues para el milestone '{milestone_title}'.")
+
+
+@bot.command()
+async def milestone_points_without_dk(ctx, milestone_title: str):
+    """
+    Comando de Discord para obtener y sumar todos los puntos (Estimate) de los issues de un milestone (cerrados y abiertos) sin aplicar DK.
+    :param ctx: El contexto del comando de Discord.
+    :param milestone_title: El título del milestone a filtrar.
+    """
+    # Obtener todos los issues (cerrados y abiertos)
+    all_issues = get_all_issues(GITHUB_API_TOKEN=GITHUB_TOKEN)
+
+    # Filtrar los issues por el milestone especificado
+    milestone_issues = filter_issues_by_milestone(all_issues, milestone_title)
+
+    # Verificar si hay issues filtrados
+    if milestone_issues:
+        # Calcular los puntos totales sin DK
+        total_points = issues_total_points_without_dk(milestone_issues)
+
+        # Enviar el resultado al canal de Discord
+        await ctx.send(f"Puntuación total sin DK para el milestone '{milestone_title}': {total_points}")
+    else:
+        await ctx.send(f"No se encontraron issues para el milestone '{milestone_title}'.")
 
 
 @bot.command()

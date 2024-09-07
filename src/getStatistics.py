@@ -219,3 +219,20 @@ def filter_issues_by_milestone(issues, milestone_title):
 
     return filtered_issues
 
+
+
+def issues_total_points_without_dk(issues):
+    """
+    Calcula la suma total de los puntos (Estimate) para una lista de issues sin aplicar DK.
+
+    :param issues: Lista de issues (abiertos, cerrados o ambos)
+    :return: La suma total de los puntos Estimate
+    """
+    total_points = 0
+
+    # Iterar sobre los issues y sumar los puntos del campo 'Estimate'
+    for issue in issues:
+        estimate = issue.get('estimate', {}).get('number', 0)
+        total_points += estimate
+
+    return total_points
