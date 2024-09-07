@@ -219,7 +219,7 @@ def calculate_total_points_with_dk(issues):
 
 
 # Llamada a la función get_project_items_with_custom_fields
-def issuesDK(GITHUB_API_TOKEN):
+def perfect_milestone_grade(GITHUB_API_TOKEN):
     issues_data = get_project_items_with_custom_fields(GITHUB_API_TOKEN)
     # Extraer los issues desde el campo 'nodes'
     issues = issues_data['data']['organization']['projectsV2']['nodes'][0]['items']['nodes']
@@ -233,4 +233,78 @@ def issuesDK(GITHUB_API_TOKEN):
     print(f"Promedio de DK: {average_dk}")
 
     return total_with_dk, total_without_dk, average_dk
+
+
+
+def calculate_milestone_grade(issues):
+    total_points_without_dk = 0
+    total_points_with_dk = 0
+    closed_issues_points_without_dk = 0
+    closed_issues_points_with_dk = 0
+
+    # Iterar sobre todos los issues
+    for issue in issues:
+        # Asegurarnos de que 'estimate' exista y sea un diccionario
+        if 'estimate' in issue:
+            estimate = issue['estimate']['number']
+        else:
+            # Si no hay estimado, continuamos al siguiente issue
+            continue
+
+        created_at = datetime.strptime(issue['content']['createdAt'], "%Y-%m-%dT%H:%M:%SZ")
+        closed = issue['content']['closed']  # Saber si el issue está cerrado
+        milestone = issue['content'].get('milestone', None)
+
+        # Verificar si tiene un milestone con un título
+        if milestone and 'title' in milestone:
+            milestone_title = milestone['title']
+
+            # Obtener las fechas de inicio y fin del milestone basadas en su título
+            if milestone_title == "Milestone #1":
+                milestone_start = datetime(2024, 8, 29)
+                milestone_end = datetime(2024, 9, 20)
+            elif milestone_title == "Milestone #2":
+                milestone_start = datetime(2024, 9, 21)
+                milestone_end = datetime(2024, 10, 20)
+            else:
+                # Si el milestone no coincide con los que conocemos, saltamos este issue
+                continue
+        else:
+            # Si no tiene un milestone válido, saltamos este issue
+            continue
+
+        # Calcular puntaje sin aplicar dk para todos los issues
+        total_points_without_dk += estimate
+
+        # Calcular dk y aplicar al puntaje
+        dk = dk_penalty(milestone_start, milestone_end, created_at)
+        total_points_with_dk += estimate * dk
+
+        # Calcular puntaje solo para los issues cerrados
+        if closed:
+            closed_issues_points_without_dk += estimate
+            closed_issues_points_with_dk += estimate * dk
+
+    # Calcular la nota del milestone
+    if closed_issues_points_without_dk > 0:
+        milestone_grade = closed_issues_points_with_dk / closed_issues_points_without_dk
+    else:
+        milestone_grade = 0
+
+    return milestone_grade, closed_issues_points_with_dk, total_points_without_dk
+
+# Llamada a la función para calcular la nota del milestone
+def milestone_grade(GITHUB_API_TOKEN):
+    issues_data = get_project_items_with_custom_fields(GITHUB_API_TOKEN)
+    issues = issues_data['data']['organization']['projectsV2']['nodes'][0]['items']['nodes']
+
+    # Calcular la nota del milestone
+    grade, closed_with_dk, total_without_dk = calculate_milestone_grade(issues)
+
+    # Imprimir los resultados
+    print(f"Nota del Milestone: {grade}")
+    print(f"Puntos con DK (issues cerrados): {closed_with_dk}")
+    print(f"Puntos sin DK (todos los issues): {total_without_dk}")
+
+    return grade, closed_with_dk, total_without_dk
 
