@@ -1321,7 +1321,20 @@ github_to_discord = {
     "AngelMartinez33": "angeladriaan",
     "marcosarraiza": "echorr_",
     "Alej24": "bertroom",
-    # Otros mapeos que desees agregar...
+    "Brandell13": "drex0842",
+    "daninad1248": "12daninad48",
+    "diegorobles2": "diegorobles256",
+    "yamayrie": "80280085",
+    "SebastianSaliva": "legacyblurs",
+    "rafa-quiles": "rift_walker.",
+    "Joeltorres20": "mr.tower69",
+    "IvanierB": "ivanierbellido",
+    "JConcepcion01": "thi_laststar",
+    "Janiel777": "janielj.nunez",
+    "AlexisTraversoPR": "traverso14",
+    "alejothebot": "alejothebot",
+    "lordisseisama": "lordisseisama",
+    "drex0842": "drex0842"
 }
 
 
