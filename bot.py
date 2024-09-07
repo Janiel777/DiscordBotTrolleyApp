@@ -12,6 +12,7 @@ import pymongo
 import re
 import pytz  # Para manejo de zona horaria
 import subprocess
+import traceback
 
 from generateTeamMetrics import getTeamMetricsForMilestone
 from getTeamMembers import get_team_members
@@ -958,7 +959,10 @@ async def generar_estadisticas(ctx):
         await ctx.send(f"Estadísticas generadas para el equipo {TEAM_NAME}:\n{metrics}")
 
     except Exception as e:
-        await ctx.send(f"Error generando estadísticas: {str(e)}")
+        # Captura del traceback completo
+        tb_str = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
+        # Envía el error al canal
+        await ctx.send(f"Error generando estadísticas: {str(e)}\nTraceback:\n{tb_str}")
 
 
 @bot.event
