@@ -170,9 +170,9 @@ def dk_penalty(milestone_start, milestone_end, issue_created):
     return penalty
 
 
-# Función para calcular el puntaje total con y sin dk
+
+# Función para calcular el puntaje total aplicando dk
 def calculate_total_points_with_dk(issues):
-    total_points_without_dk = 0
     total_points_with_dk = 0
 
     # Iterar sobre todos los issues
@@ -205,17 +205,27 @@ def calculate_total_points_with_dk(issues):
             # Si no tiene un milestone válido, saltamos este issue
             continue
 
-        # Calcular puntaje sin aplicar dk
-        total_points_without_dk += estimate
-
         # Calcular dk y aplicar al puntaje
         dk = dk_penalty(milestone_start, milestone_end, created_at)
         total_points_with_dk += estimate * dk
 
-    # Calcular el promedio del dk
-    dk_average = total_points_with_dk / total_points_without_dk if total_points_without_dk > 0 else 0
+    return total_points_with_dk
 
-    return total_points_with_dk, total_points_without_dk, dk_average
+
+
+# Función para calcular el puntaje total sin dk
+def calculate_total_points_without_dk(issues):
+    total_points_without_dk = 0
+
+    # Iterar sobre todos los issues
+    for issue in issues:
+        if 'estimate' in issue:
+            estimate = issue['estimate']['number']
+            total_points_without_dk += estimate
+        else:
+            continue
+
+    return total_points_without_dk
 
 
 # Llamada a la función get_project_items_with_custom_fields
@@ -293,18 +303,27 @@ def calculate_milestone_grade(issues):
 
     return milestone_grade, closed_issues_points_with_dk, total_points_without_dk
 
+
 # Llamada a la función para calcular la nota del milestone
 def milestone_grade(GITHUB_API_TOKEN):
-    issues_data = get_project_items_with_custom_fields(GITHUB_API_TOKEN)
-    issues = issues_data['data']['organization']['projectsV2']['nodes'][0]['items']['nodes']
+    # Obtener los issues del milestone
+    issues = get_project_items_with_custom_fields(GITHUB_API_TOKEN)
 
-    # Calcular la nota del milestone
-    grade, closed_with_dk, total_without_dk = calculate_milestone_grade(issues)
+    # Filtrar solo los issues cerrados
+    closed_issues = [issue for issue in issues if issue.get('closed', False) or issue.get('closedAt')]
 
-    # Imprimir los resultados
-    print(f"Nota del Milestone: {grade}")
-    print(f"Puntos con DK (issues cerrados): {closed_with_dk}")
-    print(f"Puntos sin DK (todos los issues): {total_without_dk}")
+    # Si no hay issues cerrados, devolver 0 para todos los valores
+    if not closed_issues:
+        return 0, 0, 0
 
-    return grade, closed_with_dk, total_without_dk
+    # Calcular los puntos de los issues cerrados con DK
+    total_with_dk = calculate_total_points_with_dk(closed_issues)
+
+    # Calcular los puntos de todos los issues (cerrados y abiertos) sin DK
+    total_without_dk_all = calculate_total_points_without_dk(issues)
+
+    # Evitar dividir por cero en caso de que no haya issues sin DK
+    average_dk = (total_with_dk / total_without_dk_all) if total_without_dk_all != 0 else 0
+
+    return total_with_dk, total_without_dk_all, average_dk
 
