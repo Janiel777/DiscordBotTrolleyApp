@@ -16,7 +16,7 @@ import traceback
 
 from getStatistics import get_repo_issues, get_repo, get_project_items_with_custom_fields, get_all_issues, \
     get_open_issues, filter_issues_by_milestone, issues_total_points_without_dk, issues_total_points_with_dk, \
-    get_closed_issues, get_closed_issues_by_milestone
+    get_closed_issues, get_closed_issues_by_milestone, get_milestone_total_points_without_dk
 
 app = Flask(__name__)
 
@@ -1153,7 +1153,22 @@ async def projects(ctx):
         await ctx.send("Aquí están los datos del repositorio:", file=discord.File("repo_data.txt"))
 
 
+@bot.command(name='milestone_points_without_dk')
+async def milestone_points_without_dk(ctx, milestone_name: str):
+    """
+    Comando de Discord para calcular los puntos sin DK de todos los issues de un milestone específico.
 
+    :param ctx: El contexto del comando en Discord.
+    :param milestone_name: El nombre del milestone a filtrar.
+    """
+    # Token de autenticación
+    GITHUB_TOKEN = os.getenv("GITHUB_API_TOKEN")
+
+    # Llamar a la función para obtener los puntos sin DK
+    total_points_without_dk = get_milestone_total_points_without_dk(GITHUB_TOKEN, milestone_name)
+
+    # Responder en Discord con el resultado
+    await ctx.send(f"Total de puntos sin DK para el milestone '{milestone_name}': {total_points_without_dk}")
 
 
 @bot.event
