@@ -18,7 +18,8 @@ from getStatistics import get_repo_issues, get_repo, get_project_items_with_cust
     get_open_issues, filter_issues_by_milestone, issues_total_points_without_dk, issues_total_points_with_dk, \
     get_closed_issues, get_closed_issues_by_milestone, get_milestone_perfect_total_points_without_dk, \
     get_milestone_perfect_total_points_with_dk, get_milestone_closed_total_points_with_dk, \
-    get_milestone_average_with_dk, get_milestone_closed_average_with_dk, calculate_individual_grades
+    get_milestone_average_with_dk, get_milestone_closed_average_with_dk, calculate_individual_grades, \
+    group_issues_by_assignee
 
 app = Flask(__name__)
 
@@ -1241,12 +1242,13 @@ async def individual_grades(ctx, milestone_name: str):
     Comando para calcular y mostrar las notas individuales de cada persona en un milestone específico,
     tanto antes como después de ser multiplicadas por la nota del milestone. También muestra la nota del milestone.
 
+    Incluye la cantidad de issues por persona, los puntos de cada issue y el total de puntos.
+
     :param ctx: Contexto del comando en Discord.
     :param milestone_name: El nombre del milestone.
     """
-    # Fechas de inicio y fin del milestone (placeholder, puedes adaptarlo)
-    milestone_start = datetime(2024, 8, 29)  # Fecha de inicio placeholder
-    milestone_end = datetime(2024, 9, 20)    # Fecha de fin placeholder
+    milestone_start = datetime(2024, 8, 29)  # Placeholder para la fecha de inicio del milestone
+    milestone_end = datetime(2024, 9, 20)  # Placeholder para la fecha de fin del milestone
 
     # Llamar a la función para calcular las notas individuales
     grades = calculate_individual_grades(GITHUB_TOKEN, milestone_name, milestone_start, milestone_end)
@@ -1254,15 +1256,33 @@ async def individual_grades(ctx, milestone_name: str):
     # Calcular el promedio del milestone (todos los issues cerrados y abiertos con DK)
     milestone_average = get_milestone_average_with_dk(GITHUB_TOKEN, milestone_name, milestone_start, milestone_end)
 
+    # Obtener todos los issues filtrados por el milestone
+    milestone_issues = filter_issues_by_milestone(get_all_issues(GITHUB_TOKEN), milestone_name)
+
+    # Calcular el total de puntos de todos los issues
+    total_points = issues_total_points_without_dk(milestone_issues)
+
     # Preparar el mensaje con las notas
-    grade_message = f"Notas individuales para el milestone '{milestone_name}':\n"
+    grade_message = f"Resumen del milestone '{milestone_name}':\n"
+    grade_message += f"Total de puntos en todos los issues: {total_points:.2f}\n"
     grade_message += f"Nota del milestone (todos los issues con DK): {milestone_average:.2f}\n\n"
+
+    # Agrupar los issues por asignado
+    assignee_issues = group_issues_by_assignee(milestone_issues)
 
     # Mostrar notas individuales antes y después de multiplicar por la nota del milestone
     for assignee, (individual_grade, final_grade) in grades.items():
+        assignee_issues_list = assignee_issues.get(assignee, [])
+        num_issues = len(assignee_issues_list)
+        issue_points = [issue['estimate']['number'] for issue in assignee_issues_list]
+        total_issue_points = sum(issue_points)
+
         grade_message += (f"{assignee}:\n"
-                          f"  Nota individual sin multiplicar: {individual_grade:.2f}\n"
-                          f"  Nota final (después de multiplicar por la del milestone): {final_grade:.2f}\n\n")
+                          f"  - Issues asignados: {num_issues}\n"
+                          f"  - Puntos por issue: {issue_points}\n"
+                          f"  - Puntos totales: {total_issue_points:.2f}\n"
+                          f"  - Nota individual sin multiplicar: {individual_grade:.2f}\n"
+                          f"  - Nota final (después de multiplicar por la del milestone): {final_grade:.2f}\n\n")
 
     # Enviar el mensaje al canal de Discord
     await ctx.send(grade_message)
