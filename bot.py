@@ -11,6 +11,10 @@ from datetime import datetime, timedelta
 import pymongo
 import re
 import pytz  # Para manejo de zona horaria
+import subprocess
+
+from generateTeamMetrics import getTeamMetricsForMilestone
+from getTeamMembers import get_team_members
 
 app = Flask(__name__)
 
@@ -914,6 +918,47 @@ async def finalizar_reunion(ctx):
         await ctx.send("No hay ninguna reunión activa.")
 
 
+ORG_NAME = 'uprm-inso4116-2024-2025-s1'
+TEAM_NAME = 'team1'
+
+
+
+@bot.command(name="generar_estadisticas")
+async def generar_estadisticas(ctx):
+    try:
+        # Path al archivo de configuración del curso, similar a "dev-metrics.yml"
+        config_path = 'INSO-GH-API-QUERY/config.json'
+
+        with open(config_path, 'r') as config_file:
+            course_config = json.load(config_file)
+
+        organization = course_config["organization"]
+        teams_and_teamdata = course_config["teams"]
+        milestone = teams_and_teamdata[TEAM_NAME]["milestone"]
+        managers = teams_and_teamdata[TEAM_NAME]["managers"]
+        milestoneGrade = teams_and_teamdata[TEAM_NAME]["milestoneGrade"]
+
+        # Obtener miembros del equipo
+        members = get_team_members(organization, TEAM_NAME)
+
+        # Ejecutar las métricas del hito
+        metrics = getTeamMetricsForMilestone(
+            org=ORG_NAME,
+            team=TEAM_NAME,
+            milestone=milestone,
+            members=members,
+            managers=managers,
+            startDate=course_config["milestoneStartsOn"],
+            endDate=course_config["milestoneEndsOn"],
+            milestoneGrade=milestoneGrade,
+            useDecay=True
+        )
+
+        # Enviar resultados por Discord
+        await ctx.send(f"Estadísticas generadas para el equipo {TEAM_NAME}:\n{metrics}")
+
+    except Exception as e:
+        await ctx.send(f"Error generando estadísticas: {str(e)}")
 
 
 @bot.event
