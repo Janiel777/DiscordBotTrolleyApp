@@ -1,0 +1,3 @@
+[submodule "INSO-GH-API-QUERY"]
+	path = INSO-GH-API-QUERY
+	url = https://github.com/Poggecci/INSO-GH-API-QUERY.git
