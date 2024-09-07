@@ -920,7 +920,7 @@ async def finalizar_reunion(ctx):
 
 
 ORG_NAME = 'uprm-inso4116-2024-2025-s1'
-TEAM_NAME = 'team1'
+TEAM_NAME = 'semester-project-trolley-tracker-app'
 
 
 
