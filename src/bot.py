@@ -922,35 +922,46 @@ async def finalizar_reunion(ctx):
 # Comando para obtener los issues del repositorio
 @bot.command()
 async def all_issues(ctx):
-    # Llamar a la función de getStatistics.py  # Asegúrate de reemplazar esto por tu token
+    """
+    Comando de Discord para obtener y enviar todos los issues (abiertos y cerrados)
+    """
+    # Llamar a la función get_all_issues
     issues = get_all_issues(GITHUB_API_TOKEN=GITHUB_TOKEN)
 
-    # Verificar si hubo un error
-    if isinstance(issues, str):
-        await ctx.send(f"Error al obtener los issues: {issues}")
-    else:
-        # Enviar los primeros 5 issues como ejemplo
-        message = "Issues cerrados y abiertos del repositorio:\n"
-        for issue in issues:  # Muestra los primeros 5 issues
-            message += f"- {issue['title']} (#{issue['number']})\n"
+    if issues:
+        # Preparar el mensaje con los títulos de los issues
+        message = "Issues del proyecto:\n"
+        for issue in issues:
+            title = issue['content']['title']
+            url = issue['content']['url']
+            message += f"- {title}: {url}\n"
+
+        # Enviar el mensaje al canal de Discord
         await ctx.send(message)
+    else:
+        await ctx.send("No se encontraron issues.")
 
 
-# Comando para obtener los issues del repositorio
 @bot.command()
 async def open_issues(ctx):
-    # Llamar a la función de getStatistics.py  # Asegúrate de reemplazar esto por tu token
+    """
+    Comando de Discord para obtener y enviar solo los issues abiertos
+    """
+    # Llamar a la función get_open_issues
     issues = get_open_issues(GITHUB_API_TOKEN=GITHUB_TOKEN)
 
-    # Verificar si hubo un error
-    if isinstance(issues, str):
-        await ctx.send(f"Error al obtener los issues: {issues}")
-    else:
-        # Enviar los primeros 5 issues como ejemplo
-        message = "Issues abiertos del repositorio:\n"
-        for issue in issues:  # Muestra los primeros 5 issues
-            message += f"- {issue['title']} (#{issue['number']})\n"
+    if issues:
+        # Preparar el mensaje con los títulos de los issues abiertos
+        message = "Issues abiertos del proyecto:\n"
+        for issue in issues:
+            title = issue['content']['title']
+            url = issue['content']['url']
+            message += f"- {title}: {url}\n"
+
+        # Enviar el mensaje al canal de Discord
         await ctx.send(message)
+    else:
+        await ctx.send("No hay issues abiertos.")
 
 
 @bot.command()
