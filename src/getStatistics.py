@@ -426,3 +426,71 @@ def get_milestone_closed_average_with_dk(GITHUB_API_TOKEN, milestone_name, miles
     average_with_dk_closed = total_points_with_dk_closed / total_points_without_dk
 
     return average_with_dk_closed
+
+
+def group_issues_by_assignee(issues):
+    """
+    Agrupa los issues por asignado (assignee_name) y devuelve un diccionario con los nombres de los asignados como clave
+    y sus respectivos issues como valor.
+
+    :param issues: Lista de issues (abiertos o cerrados).
+    :return: Un diccionario con los nombres de los asignados como clave y sus respectivos issues como valor.
+    """
+    assignee_dict = {}
+
+    # Iterar sobre cada issue
+    for issue in issues:
+        # Obtener la lista de asignados de este issue
+        assignees = issue['content']['assignees']['nodes']
+
+        # Añadir el issue bajo cada asignado
+        for assignee in assignees:
+            assignee_name = assignee['login']
+
+            # Si el asignado aún no está en el diccionario, lo inicializamos con una lista vacía
+            if assignee_name not in assignee_dict:
+                assignee_dict[assignee_name] = []
+
+            # Agregar el issue a la lista del asignado
+            assignee_dict[assignee_name].append(issue)
+
+    return assignee_dict
+
+
+
+def calculate_individual_grades(GITHUB_API_TOKEN, milestone_name, milestone_start, milestone_end):
+    # Obtener todos los issues del milestone
+    all_issues = get_all_issues(GITHUB_API_TOKEN)
+    milestone_issues = filter_issues_by_milestone(all_issues, milestone_name)
+
+    # Agrupar los issues por asignado
+    issues_by_assignee = group_issues_by_assignee(milestone_issues)
+
+    # Obtener la nota promedio del milestone
+    milestone_average = get_milestone_average_with_dk(GITHUB_API_TOKEN, milestone_name, milestone_start, milestone_end)
+
+    # Diccionario para guardar las notas individuales
+    individual_grades = {}
+
+    # Calcular la nota individual para cada asignado
+    for assignee, issues in issues_by_assignee.items():
+        # Calcular los puntos sin DK
+        total_points_without_dk = issues_total_points_without_dk(issues)
+
+        # Calcular los puntos con DK
+        total_points_with_dk = issues_total_points_with_dk(issues, milestone_start, milestone_end)
+
+        # Evitar división por cero
+        if total_points_without_dk == 0:
+            individual_grade = 0
+        else:
+            # Calcular la nota individual (proporción de puntos con DK sobre puntos sin DK)
+            individual_grade = total_points_with_dk / total_points_without_dk
+
+        # Multiplicar la nota individual por la nota del milestone
+        final_grade = individual_grade * milestone_average
+
+        # Guardar la nota final en el diccionario
+        individual_grades[assignee] = final_grade
+
+    return individual_grades

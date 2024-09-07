@@ -18,7 +18,7 @@ from getStatistics import get_repo_issues, get_repo, get_project_items_with_cust
     get_open_issues, filter_issues_by_milestone, issues_total_points_without_dk, issues_total_points_with_dk, \
     get_closed_issues, get_closed_issues_by_milestone, get_milestone_perfect_total_points_without_dk, \
     get_milestone_perfect_total_points_with_dk, get_milestone_closed_total_points_with_dk, \
-    get_milestone_average_with_dk, get_milestone_closed_average_with_dk
+    get_milestone_average_with_dk, get_milestone_closed_average_with_dk, calculate_individual_grades
 
 app = Flask(__name__)
 
@@ -1232,6 +1232,31 @@ async def milestone_grade(ctx, milestone_name: str):
     # Enviar el resultado en el canal de Discord
     await ctx.send(f"El promedio de puntos con DK si todos los issues se cierran antes de la fecha limite para el milestone '{milestone_name}' es: {average_with_dk}\n"
                    f"El promedio de puntos con DK con los issues cerrados actuales para el milestone '{milestone_name}' es: {average_with_dk_closed}")
+
+
+
+@bot.command(name="individual_grades")
+async def individual_grades(ctx, milestone_name: str):
+    """
+    Comando para calcular y mostrar las notas individuales de cada persona en un milestone específico.
+
+    :param ctx: Contexto del comando en Discord.
+    :param milestone_name: El nombre del milestone.
+    """
+    # Fechas de inicio y fin del milestone (placeholder, puedes adaptarlo)
+    milestone_start = datetime(2024, 8, 29)  # Fecha de inicio placeholder
+    milestone_end = datetime(2024, 9, 20)    # Fecha de fin placeholder
+
+    # Llamar a la función para calcular las notas individuales
+    grades = calculate_individual_grades(GITHUB_TOKEN, milestone_name, milestone_start, milestone_end)
+
+    # Preparar el mensaje con las notas
+    grade_message = f"Notas individuales para el milestone '{milestone_name}':\n"
+    for assignee, grade in grades.items():
+        grade_message += f"{assignee}: {grade:.2f}\n"
+
+    # Enviar el mensaje al canal de Discord
+    await ctx.send(grade_message)
 
 
 @bot.event
