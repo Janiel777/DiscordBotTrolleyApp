@@ -1,1 +1,1 @@
-web: PYTHONPATH=INSO-GH-API-QUERY/src python bot.py
+web: python bot.py
