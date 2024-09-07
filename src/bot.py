@@ -2,7 +2,7 @@ import asyncio
 import io
 import os
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from flask import Flask, request, json
 from threading import Thread
 from discord import File
@@ -1312,6 +1312,66 @@ async def unassigned_members(ctx):
 
     # Enviar el mensaje al canal de Discord
     await ctx.send(message)
+
+
+
+# Diccionario de mapeo GitHub -> Discord
+github_to_discord = {
+    "MrL9000": "mr.l9000",
+    "AngelMartinez33": "angeladriaan",
+    "marcosarraiza": "echorr_",
+    "Alej24": "bertroom",
+    # Otros mapeos que desees agregar...
+}
+
+
+
+# Función para obtener los miembros sin issues asignados y mapearlos con Discord
+async def remind_unassigned_members():
+    unassigned_github_members = find_unassigned_members(GITHUB_TOKEN)
+
+    # Lista de usuarios de Discord sin asignación
+    unassigned_discord_members = []
+    unmapped_members = []
+
+    for github_user in unassigned_github_members:
+        if github_user in github_to_discord:
+            # Si el GitHub está en el mapeo, agregar al usuario de Discord
+            unassigned_discord_members.append(github_to_discord[github_user])
+        else:
+            # Si el GitHub no está mapeado, agregar a la lista de no mapeados
+            unmapped_members.append(github_user)
+
+    # Enviar el mensaje solo si hay miembros sin asignación
+    if unassigned_discord_members:
+        message = "Reminder! The following members do not have any assigned issues:\n"
+        message += " ".join([f"@{discord_user}" for discord_user in unassigned_discord_members])
+        channel = bot.get_channel(1278517612292210789)  # Reemplaza con el ID del canal donde quieres enviar el mensaje
+        await channel.send(message)
+
+    # Enviar un mensaje aparte para los usuarios de GitHub que no están mapeados
+    if unmapped_members:
+        unmapped_message = "The following GitHub users do not have a Discord mapping and could not be tagged:\n"
+        unmapped_message += ", ".join(unmapped_members)
+        channel = bot.get_channel(1278517612292210789)  # Reemplaza con el ID del canal donde quieres enviar el mensaje
+        await channel.send(unmapped_message)
+
+# Comando para iniciar el recordatorio
+@bot.command(name="start_reminder")
+async def start_reminder(ctx):
+    await ctx.send("Daily reminders have started!")
+    daily_reminder.start()
+
+# Tarea para ejecutar el recordatorio diariamente
+@tasks.loop(hours=24)
+async def daily_reminder():
+    await remind_unassigned_members()
+
+# Comando para detener el recordatorio
+@bot.command(name="stop_reminder")
+async def stop_reminder(ctx):
+    daily_reminder.cancel()
+    await ctx.send("Daily reminders have been stopped.")
 
 @bot.event
 async def on_ready():
