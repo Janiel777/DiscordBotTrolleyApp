@@ -935,19 +935,21 @@ async def issues(ctx):
         await ctx.send(message)
 
 
-# Comando para obtener los issues del repositorio
 @bot.command()
 async def repo(ctx):
-    # Llamar a la función de getStatistics.py  # Asegúrate de reemplazar esto por tu token
+    # Llamar a la función de getStatistics.py
     repoData = get_repo(GITHUB_API_TOKEN=GITHUB_TOKEN)
 
     # Verificar si hubo un error
     if isinstance(repoData, str):
         await ctx.send(f"Error al obtener el repo: {repoData}")
     else:
-        # Enviar los primeros 5 issues como ejemplo
-        message = f"Data del repositorio:\n{repoData}"
-        await ctx.send(message)
+        # Escribir los datos en un archivo de texto
+        with open("repo_data.txt", "w", encoding="utf-8") as file:
+            file.write(str(repoData))
+
+        # Enviar el archivo al canal
+        await ctx.send("Aquí están los datos del repositorio:", file=discord.File("repo_data.txt"))
 
 @bot.event
 async def on_ready():
