@@ -219,7 +219,7 @@ def calculate_total_points_with_dk(issues):
 
 
 # Llamada a la función get_project_items_with_custom_fields
-def perfect_milestone_grade(GITHUB_API_TOKEN):
+def perfect_milestone_grade_all_issues_closed(GITHUB_API_TOKEN):
     issues_data = get_project_items_with_custom_fields(GITHUB_API_TOKEN)
     # Extraer los issues desde el campo 'nodes'
     issues = issues_data['data']['organization']['projectsV2']['nodes'][0]['items']['nodes']

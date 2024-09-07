@@ -14,8 +14,7 @@ import pytz  # Para manejo de zona horaria
 import subprocess
 import traceback
 
-from getStatistics import get_repo_issues, get_repo, get_project_items_with_custom_fields, perfect_milestone_grade, \
-    milestone_grade
+from getStatistics import get_repo_issues, get_repo, get_project_items_with_custom_fields, milestone_grade, perfect_milestone_grade_all_issues_closed
 
 app = Flask(__name__)
 
@@ -974,7 +973,7 @@ async def projects(ctx):
 async def perfect_milestone_grade(ctx):
 
     # Ejecutar la función main que obtiene los puntos con y sin dk
-    total_with_dk, total_without_dk, average_dk = perfect_milestone_grade(GITHUB_API_TOKEN=GITHUB_TOKEN)
+    total_with_dk, total_without_dk, average_dk = perfect_milestone_grade_all_issues_closed(GITHUB_API_TOKEN=GITHUB_TOKEN)
 
     # Enviar los resultados al canal de Discord
     await ctx.send(f"Total con DK: {total_with_dk}")
