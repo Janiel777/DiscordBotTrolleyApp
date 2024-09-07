@@ -14,8 +14,6 @@ import pytz  # Para manejo de zona horaria
 import subprocess
 import traceback
 
-from generateTeamMetrics import getTeamMetricsForMilestone
-from getTeamMembers import get_team_members
 
 app = Flask(__name__)
 
@@ -917,52 +915,6 @@ async def finalizar_reunion(ctx):
         reunion_channel = None  # Resetear el canal de la reunión
     else:
         await ctx.send("No hay ninguna reunión activa.")
-
-
-ORG_NAME = 'uprm-inso4116-2024-2025-s1'
-TEAM_NAME = 'semester-project-trolley-tracker-app'
-
-
-
-@bot.command(name="generar_estadisticas")
-async def generar_estadisticas(ctx):
-    try:
-        # Path al archivo de configuración del curso, similar a "dev-metrics.yml"
-        config_path = 'INSO-GH-API-QUERY/config.json'
-
-        with open(config_path, 'r') as config_file:
-            course_config = json.load(config_file)
-
-        organization = course_config["organization"]
-        teams_and_teamdata = course_config["teams"]
-        milestone = teams_and_teamdata[TEAM_NAME]["milestone"]
-        managers = teams_and_teamdata[TEAM_NAME]["managers"]
-        milestoneGrade = teams_and_teamdata[TEAM_NAME]["milestoneGrade"]
-
-        # Obtener miembros del equipo
-        members = get_team_members(organization, TEAM_NAME)
-
-        # Ejecutar las métricas del hito
-        metrics = getTeamMetricsForMilestone(
-            org=ORG_NAME,
-            team=TEAM_NAME,
-            milestone=milestone,
-            members=members,
-            managers=managers,
-            startDate=course_config["milestoneStartsOn"],
-            endDate=course_config["milestoneEndsOn"],
-            milestoneGrade=milestoneGrade,
-            useDecay=True
-        )
-
-        # Enviar resultados por Discord
-        await ctx.send(f"Estadísticas generadas para el equipo {TEAM_NAME}:\n{metrics}")
-
-    except Exception as e:
-        # Captura del traceback completo
-        tb_str = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
-        # Envía el error al canal
-        await ctx.send(f"Error generando estadísticas: {str(e)}\nTraceback:\n{tb_str}")
 
 
 @bot.event
