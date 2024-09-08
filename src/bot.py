@@ -1364,8 +1364,10 @@ async def on_message(message):
         # Obtener el ID de la discusión correspondiente en GitHub
         discussion_id = channel_to_discussion[message.channel.id]
 
+        author_name = message.author.nick if message.author.nick else message.author.display_name
+
         # Crear el cuerpo del comentario con el nombre del usuario de Discord
-        comment_body = f"**{message.author.display_name}** wrote:\n\n{message.content}"
+        comment_body = f"**{author_name}** wrote:\n\n{message.content}"
 
         # Publicar el mensaje en la discusión de GitHub correspondiente
         comment_on_discussion_graphql(GITHUB_TOKEN, discussion_id, comment_body)
