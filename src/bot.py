@@ -493,18 +493,22 @@ def handle_discussion_event(data):
     send_to_discord(message, data)
 
 
-def handle_discussion_comment_event(data):
+async def handle_discussion_comment_event(data):
     action = data['action']
     discussion_id = data['discussion']['node_id']  # Obtener el ID de la discusión
     comment_url = data['comment']['html_url']
     comment_body = data['comment']['body']
     discussion_title = data['discussion']['title']
     repo_name = data['repository']['full_name']
+    author = data['comment']['user']['login']  # Obtener el nombre del autor del comentario en GitHub
+
     message = f"💬 **Comentario en discusión** '{discussion_title}' fue **{action}** en **{repo_name}**.\n🔗 [Ver comentario]({comment_url})"
     send_to_discord(message, data)
 
     if "[Discord message]" in comment_body:
         return  # No procesar el comentario, ya que viene de Discord
+
+    github_message = f"[GitHub message] **{author}**:\n\n{comment_body}"
 
     # Verificar si el comentario proviene de una de las discusiones específicas
     if discussion_id in [
@@ -520,10 +524,12 @@ def handle_discussion_comment_event(data):
                 break
 
         if discord_channel_id:
-            # Añadir la etiqueta [GitHub message] para evitar loops infinitos
-            message_with_tag = f"[GitHub message]\n{message}"
-            # Enviar mensaje al canal de Discord
-            send_to_discord(message_with_tag, discord_channel_id)
+            # Obtener el canal de Discord usando el ID
+            channel = bot.get_channel(discord_channel_id)
+            if channel:
+                # Añadir la etiqueta [GitHub message] para evitar loops infinitos
+                # Enviar el mensaje al canal correcto
+                await channel.send(github_message)
 
 
 def handle_merge_group_event(data):
