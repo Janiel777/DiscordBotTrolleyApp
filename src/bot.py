@@ -1315,6 +1315,63 @@ async def unassigned_members(ctx):
 
 
 
+# Diccionario que mapea los ID de canales de Discord con los ID de discusiones de GitHub
+channel_to_discussion = {
+    1277350203330007108: 'D_kwDOMoKp284AbRww',  # chat general
+    1278505988579659806: 'D_kwDOMoKp284AbRwv',  # chat blue-team-trolley-metrics
+    1278506143089688586: 'D_kwDOMoKp284AbRwu'   # chat green-team-notifications
+}
+
+# Función para comentar en la discusión de GitHub
+def comment_on_discussion_graphql(GITHUB_API_TOKEN, discussion_id, comment_body):
+    url = "https://api.github.com/graphql"
+    headers = {
+        "Authorization": f"Bearer {GITHUB_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    query = """
+    mutation($discussionId: ID!, $body: String!) {
+      addDiscussionComment(input: {discussionId: $discussionId, body: $body}) {
+        comment {
+          id
+          body
+        }
+      }
+    }
+    """
+    variables = {
+        "discussionId": discussion_id,
+        "body": comment_body
+    }
+    data = {
+        "query": query,
+        "variables": variables
+    }
+    response = requests.post(url, json=data, headers=headers)
+    if response.status_code == 200:
+        print("Comment added successfully to GitHub discussion!")
+    else:
+        print(f"Error: {response.status_code}, {response.text}")
+
+# Evento para capturar mensajes en varios canales y publicarlos en las discusiones correspondientes en GitHub
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return  # Ignorar los mensajes del bot para evitar bucles
+
+    # Verificar si el canal de Discord está en nuestro diccionario de mapeo
+    if message.channel.id in channel_to_discussion:
+        # Obtener el ID de la discusión correspondiente en GitHub
+        discussion_id = channel_to_discussion[message.channel.id]
+
+        # Crear el cuerpo del comentario con el nombre del usuario de Discord
+        comment_body = f"**{message.author.name}** wrote:\n\n{message.content}"
+
+        # Publicar el mensaje en la discusión de GitHub correspondiente
+        comment_on_discussion_graphql(GITHUB_TOKEN, discussion_id, comment_body)
+
+    await bot.process_commands(message)  # Asegura que otros comandos del bot aún funcionen
+
 
 @bot.event
 async def on_ready():
