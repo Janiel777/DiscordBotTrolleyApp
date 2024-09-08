@@ -497,10 +497,14 @@ def handle_discussion_comment_event(data):
     action = data['action']
     discussion_id = data['discussion']['node_id']  # Obtener el ID de la discusión
     comment_url = data['comment']['html_url']
+    comment_body = data['comment']['body']
     discussion_title = data['discussion']['title']
     repo_name = data['repository']['full_name']
     message = f"💬 **Comentario en discusión** '{discussion_title}' fue **{action}** en **{repo_name}**.\n🔗 [Ver comentario]({comment_url})"
     send_to_discord(message, data)
+
+    if "[Discord message]" in comment_body:
+        return  # No procesar el comentario, ya que viene de Discord
 
     # Verificar si el comentario proviene de una de las discusiones específicas
     if discussion_id in [
