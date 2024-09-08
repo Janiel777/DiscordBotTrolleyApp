@@ -524,13 +524,19 @@ async def handle_discussion_comment_event(data):
                 discord_channel_id = channel
                 break
 
+        # Verificar si se encontró el canal correspondiente
         if discord_channel_id:
             # Obtener el canal de Discord usando el ID
             channel = bot.get_channel(discord_channel_id)
+
+            # Si se encontró el canal, enviar el mensaje
             if channel:
-                # Añadir la etiqueta [GitHub message] para evitar loops infinitos
-                # Enviar el mensaje al canal correcto
+                print(f"Enviando mensaje al canal: {discord_channel_id}")  # Mensaje para depuración
                 await channel.send(github_message)
+            else:
+                print(f"Error: No se pudo obtener el canal con ID {discord_channel_id}")
+        else:
+            print(f"Error: No se encontró un canal para la discusión con ID {discussion_id}")
 
 
 def handle_merge_group_event(data):
