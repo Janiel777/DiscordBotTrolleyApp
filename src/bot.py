@@ -1395,7 +1395,7 @@ def comment_on_discussion_graphql(GITHUB_API_TOKEN, discussion_id, comment_body)
 # Evento para capturar mensajes en varios canales y publicarlos en las discusiones correspondientes en GitHub
 @bot.event
 async def on_message(message):
-    if message.author == bot.user or "[GitHub message]" in message.content:
+    if "[GitHub message]" in message.content:
         return  # Ignorar los mensajes del bot para evitar bucles
 
     # Verificar si el canal de Discord está en nuestro diccionario de mapeo
