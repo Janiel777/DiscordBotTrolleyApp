@@ -31,6 +31,12 @@ MONGO_URI = os.getenv('MONGO_URI')
 ORG_NAME = 'uprm-inso4116-2024-2025-s1'  # Propietario del repositorio
 REPO_NAME = 'semester-project-trolley-tracker-app'  # Nombre del repositorio
 
+# Diccionario que mapea los ID de canales de Discord con los ID de discusiones de GitHub
+channel_to_discussion = {
+    1277350203330007108: 'D_kwDOMoKp284AbRww',  # chat general
+    1278505988579659806: 'D_kwDOMoKp284AbRwv',  # chat blue-team-trolley-metrics
+    1278506143089688586: 'D_kwDOMoKp284AbRwu'   # chat green-team-notifications
+}
 
 bot = commands.Bot(command_prefix="!")
 client = pymongo.MongoClient(MONGO_URI)
@@ -489,11 +495,31 @@ def handle_discussion_event(data):
 
 def handle_discussion_comment_event(data):
     action = data['action']
+    discussion_id = data['discussion']['node_id']  # Obtener el ID de la discusión
     comment_url = data['comment']['html_url']
     discussion_title = data['discussion']['title']
     repo_name = data['repository']['full_name']
     message = f"💬 **Comentario en discusión** '{discussion_title}' fue **{action}** en **{repo_name}**.\n🔗 [Ver comentario]({comment_url})"
     send_to_discord(message, data)
+
+    # Verificar si el comentario proviene de una de las discusiones específicas
+    if discussion_id in [
+        'D_kwDOMoKp284AbRwu',  # green-team-notifications
+        'D_kwDOMoKp284AbRww',  # general
+        'D_kwDOMoKp284AbRwv'  # blue-team-trolley-metrics
+    ]:
+        # Obtener el canal de Discord correspondiente usando el diccionario
+        discord_channel_id = None
+        for channel, d_id in channel_to_discussion.items():
+            if d_id == discussion_id:
+                discord_channel_id = channel
+                break
+
+        if discord_channel_id:
+            # Añadir la etiqueta [GitHub message] para evitar loops infinitos
+            message_with_tag = f"[GitHub message]\n{message}"
+            # Enviar mensaje al canal de Discord
+            send_to_discord(message_with_tag, discord_channel_id)
 
 
 def handle_merge_group_event(data):
@@ -1315,12 +1341,7 @@ async def unassigned_members(ctx):
 
 
 
-# Diccionario que mapea los ID de canales de Discord con los ID de discusiones de GitHub
-channel_to_discussion = {
-    1277350203330007108: 'D_kwDOMoKp284AbRww',  # chat general
-    1278505988579659806: 'D_kwDOMoKp284AbRwv',  # chat blue-team-trolley-metrics
-    1278506143089688586: 'D_kwDOMoKp284AbRwu'   # chat green-team-notifications
-}
+
 
 # Función para comentar en la discusión de GitHub
 def comment_on_discussion_graphql(GITHUB_API_TOKEN, discussion_id, comment_body):
@@ -1356,7 +1377,7 @@ def comment_on_discussion_graphql(GITHUB_API_TOKEN, discussion_id, comment_body)
 # Evento para capturar mensajes en varios canales y publicarlos en las discusiones correspondientes en GitHub
 @bot.event
 async def on_message(message):
-    if message.author == bot.user:
+    if message.author == bot.user or "[GitHub message]" in message.content:
         return  # Ignorar los mensajes del bot para evitar bucles
 
     # Verificar si el canal de Discord está en nuestro diccionario de mapeo
