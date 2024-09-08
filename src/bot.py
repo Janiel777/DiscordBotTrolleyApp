@@ -247,7 +247,8 @@ def github_webhook():
         handle_discussion_event(data)
     elif event == "discussion_comment":
         # handle_discussion_comment_event(data)
-        asyncio.run(handle_discussion_comment_event(data))  # Cambiar esta línea
+        # asyncio.run(handle_discussion_comment_event(data))  # Cambiar esta línea
+        bot.loop.create_task(handle_discussion_comment_event(data))
     elif event == "merge_group":
         handle_merge_group_event(data)
     elif event == "package":
