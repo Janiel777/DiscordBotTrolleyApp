@@ -1360,58 +1360,59 @@ async def unassigned_members(ctx):
 
 
 
+#
+# # Función para comentar en la discusión de GitHub
+# def comment_on_discussion_graphql(GITHUB_API_TOKEN, discussion_id, comment_body):
+#     url = "https://api.github.com/graphql"
+#     headers = {
+#         "Authorization": f"Bearer {GITHUB_API_TOKEN}",
+#         "Content-Type": "application/json"
+#     }
+#     query = """
+#     mutation($discussionId: ID!, $body: String!) {
+#       addDiscussionComment(input: {discussionId: $discussionId, body: $body}) {
+#         comment {
+#           id
+#           body
+#         }
+#       }
+#     }
+#     """
+#     variables = {
+#         "discussionId": discussion_id,
+#         "body": comment_body
+#     }
+#     data = {
+#         "query": query,
+#         "variables": variables
+#     }
+#     response = requests.post(url, json=data, headers=headers)
+#     if response.status_code == 200:
+#         print("Comment added successfully to GitHub discussion!")
+#     else:
+#         print(f"Error: {response.status_code}, {response.text}")
 
-# Función para comentar en la discusión de GitHub
-def comment_on_discussion_graphql(GITHUB_API_TOKEN, discussion_id, comment_body):
-    url = "https://api.github.com/graphql"
-    headers = {
-        "Authorization": f"Bearer {GITHUB_API_TOKEN}",
-        "Content-Type": "application/json"
-    }
-    query = """
-    mutation($discussionId: ID!, $body: String!) {
-      addDiscussionComment(input: {discussionId: $discussionId, body: $body}) {
-        comment {
-          id
-          body
-        }
-      }
-    }
-    """
-    variables = {
-        "discussionId": discussion_id,
-        "body": comment_body
-    }
-    data = {
-        "query": query,
-        "variables": variables
-    }
-    response = requests.post(url, json=data, headers=headers)
-    if response.status_code == 200:
-        print("Comment added successfully to GitHub discussion!")
-    else:
-        print(f"Error: {response.status_code}, {response.text}")
 
-# Evento para capturar mensajes en varios canales y publicarlos en las discusiones correspondientes en GitHub
-@bot.event
-async def on_message(message):
-    if "[GitHub message]" in message.content:
-        return  # Ignorar los mensajes del bot para evitar bucles
-
-    # Verificar si el canal de Discord está en nuestro diccionario de mapeo
-    if message.channel.id in channel_to_discussion:
-        # Obtener el ID de la discusión correspondiente en GitHub
-        discussion_id = channel_to_discussion[message.channel.id]
-
-        author_name = message.author.nick if message.author.nick else message.author.display_name
-
-        # Crear el cuerpo del comentario con el nombre del usuario de Discord
-        comment_body = f"[Discord message]**{author_name}** wrote:\n\n{message.content}"
-
-        # Publicar el mensaje en la discusión de GitHub correspondiente
-        comment_on_discussion_graphql(GITHUB_TOKEN, discussion_id, comment_body)
-
-    await bot.process_commands(message)  # Asegura que otros comandos del bot aún funcionen
+# # Evento para capturar mensajes en varios canales y publicarlos en las discusiones correspondientes en GitHub
+# @bot.event
+# async def on_message(message):
+#     if "[GitHub message]" in message.content:
+#         return  # Ignorar los mensajes del bot para evitar bucles
+#
+#     # Verificar si el canal de Discord está en nuestro diccionario de mapeo
+#     if message.channel.id in channel_to_discussion:
+#         # Obtener el ID de la discusión correspondiente en GitHub
+#         discussion_id = channel_to_discussion[message.channel.id]
+#
+#         author_name = message.author.nick if message.author.nick else message.author.display_name
+#
+#         # Crear el cuerpo del comentario con el nombre del usuario de Discord
+#         comment_body = f"[Discord message]**{author_name}** wrote:\n\n{message.content}"
+#
+#         # Publicar el mensaje en la discusión de GitHub correspondiente
+#         comment_on_discussion_graphql(GITHUB_TOKEN, discussion_id, comment_body)
+#
+#     await bot.process_commands(message)  # Asegura que otros comandos del bot aún funcionen
 
 
 @bot.event
