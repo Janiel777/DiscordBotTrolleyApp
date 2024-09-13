@@ -1,5 +1,5 @@
 import asyncio
-import io
+from io import StringIO
 import os
 import discord
 from discord.ext import commands, tasks
@@ -1331,8 +1331,14 @@ async def individual_grades(ctx, milestone_name: str):
                           f"  - Nota individual antes del milestone: {individual_grade:.2f}\n"
                           f"  - Nota final (después de multiplicar por la del milestone): {final_grade:.2f}\n\n")
 
-    # Enviar el mensaje al canal de Discord
-    await ctx.send(grade_message)
+    # Crear un archivo de texto con el contenido del mensaje
+    with StringIO() as output_file:
+        output_file.write(grade_message)
+        output_file.seek(0)
+
+        # Enviar el archivo como adjunto en Discord
+        await ctx.send("Aquí está el resumen de las notas individuales en el milestone:",
+                       file=discord.File(fp=output_file, filename="resumen_milestone.txt"))
 
 
 
