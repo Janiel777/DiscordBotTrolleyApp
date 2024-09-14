@@ -3,6 +3,7 @@ from io import StringIO
 import os
 import discord
 from discord.ext import commands, tasks
+from dotenv import load_dotenv
 from flask import Flask, request, json
 from threading import Thread
 from discord import File
@@ -22,6 +23,8 @@ from getStatistics import get_repo_issues, get_repo, get_project_items_with_cust
     group_issues_by_assignee, find_unassigned_members
 
 app = Flask(__name__)
+
+load_dotenv()
 
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 GITHUB_SECRET = os.getenv('GITHUB_SECRET')
