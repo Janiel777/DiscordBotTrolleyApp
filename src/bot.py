@@ -1426,7 +1426,7 @@ async def on_ready():
     print(f'{bot.user} está conectado a Discord!')
     pass
 
-
+#comentario
 
 if __name__ == "__main__":
     Thread(target=run_flask).start()
