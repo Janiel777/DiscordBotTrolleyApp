@@ -1,4 +1,4 @@
-from src import MONGO_URI, DISCORD_TOKEN
+from environment_variables import MONGO_URI, DISCORD_TOKEN
 from flask import Flask, request
 import pymongo
 import os
