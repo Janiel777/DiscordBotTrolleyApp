@@ -823,7 +823,7 @@ def enviar_a_ia(mensaje_usuario):
 
     # Llamar a la API de OpenAI
     response = openai.ChatCompletion.create(
-        model="gpt-4",  # Puedes cambiar por el modelo que estés usando
+        model="gpt-3.5-turbo",  # Puedes cambiar por el modelo que estés usando
         messages=mensajes
     )
 
