@@ -1,4 +1,4 @@
-from environment_variables import GITHUB_TOKEN, MONGO_URI
+from environment_variables import GITHUB_TOKEN, MONGO_URI, OPENIA_API_KEY
 import asyncio
 from INSOAPIQuery.generateTeamMetrics import getTeamMetricsForMilestone
 from INSOAPIQuery.getTeamMembers import get_team_members
@@ -11,7 +11,10 @@ import pytz  # Para manejo de zona horaria
 import discord
 from discord.ext import commands
 from dateutil.parser import isoparse
+import openai
+import os
 
+openai.api_key = OPENIA_API_KEY
 
 client = pymongo.MongoClient(MONGO_URI)
 db = client['trolleyAppDB']
@@ -789,6 +792,65 @@ async def team_metrics(ctx, milestone: str, opentasks: bool = False):
 #         comment_on_discussion_graphql(GITHUB_TOKEN, discussion_id, comment_body)
 #
 #     await bot.process_commands(message)  # Asegura que otros comandos del bot aún funcionen
+
+
+# Función para leer el contexto desde un archivo .txt
+
+
+
+def leer_contexto():
+    # Obtener la ruta absoluta del directorio donde se encuentra el archivo actual
+    ruta_actual = os.path.dirname(os.path.abspath(__file__))
+
+    # Combinar la ruta actual con el nombre del archivo
+    ruta_contexto = os.path.join(ruta_actual, 'contexto.txt')
+
+    # Leer el archivo usando la ruta absoluta
+    with open(ruta_contexto, 'r', encoding='utf-8') as file:
+        contexto = file.read().strip()  # Leer el archivo y eliminar los espacios en blanco
+    return contexto
+
+
+def enviar_a_ia(mensaje_usuario):
+    # Leer el contexto desde el archivo
+    contexto = leer_contexto()
+
+    # Preparar el mensaje con el contexto y el mensaje del usuario
+    mensajes = [
+        {"role": "system", "content": contexto},  # Contexto cargado desde el archivo
+        {"role": "user", "content": mensaje_usuario}  # Mensaje del usuario
+    ]
+
+    # Llamar a la API de OpenAI
+    response = openai.ChatCompletion.create(
+        model="gpt-4",  # Puedes cambiar por el modelo que estés usando
+        messages=mensajes
+    )
+
+    # Devolver la respuesta generada por la IA
+    return response.choices[0].message['content']
+
+
+@bot.event
+async def on_message(message):
+    # Evitar que el bot procese sus propios mensajes
+    if message.author == bot.user:
+        return
+
+    # Escuchar todos los mensajes y enviarlos a la IA
+    respuesta_ia = enviar_a_ia(message.content)
+
+    # Procesar la respuesta de la IA para determinar si debe intervenir
+    if "[intervenir]" in respuesta_ia:
+        # Si la IA decide intervenir, envía un mensaje al canal
+        await message.channel.send(
+            f"{message.author.mention} La IA ha detectado que puede ayudarte. ¿Te gustaría que intervenga?")
+    elif "[no intervenir]" in respuesta_ia:
+        # Si la IA decide no intervenir, no hace nada o se puede hacer un log
+        pass
+
+    # Asegurarse de que otros comandos del bot también se procesen
+    await bot.process_commands(message)
 
 
 @bot.event
