@@ -1,1 +1,1 @@
-web: python src/bot.py
+web: python src/FlaskApp/flask_app.py
