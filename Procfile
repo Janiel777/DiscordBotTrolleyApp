@@ -1,1 +1,1 @@
-web: PYTHONPATH=src python src/FlaskApp/flask_app.py
+web: PYTHONPATH=. python src/FlaskApp/flask_app.py
