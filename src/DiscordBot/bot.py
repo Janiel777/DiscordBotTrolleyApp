@@ -1,4 +1,4 @@
-from src.environment_variables import GITHUB_TOKEN, MONGO_URI
+from environment_variables import GITHUB_TOKEN, MONGO_URI
 import asyncio
 from io import StringIO
 from datetime import datetime, timedelta
