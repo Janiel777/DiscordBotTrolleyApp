@@ -279,9 +279,9 @@ def run_flask():
 
 
 
-# Iniciar tanto Flask como el bot
 if __name__ == "__main__":
-    # Ejecutar el bot de Discord en un hilo separado
-    Thread(target=lambda: bot.run(DISCORD_TOKEN)).start()
-    # Ejecutar Flask en el hilo principal
-    run_flask()
+    # Ejecutar Flask en un hilo separado
+    Thread(target=run_flask).start()
+
+    # Ejecutar el bot de Discord en el hilo principal
+    bot.run(DISCORD_TOKEN)
