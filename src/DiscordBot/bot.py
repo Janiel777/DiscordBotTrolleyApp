@@ -11,10 +11,8 @@ import pytz  # Para manejo de zona horaria
 import discord
 from discord.ext import commands
 from dateutil.parser import isoparse
-import openai
-import os
 
-openai.api_key = OPENIA_API_KEY
+
 
 client = pymongo.MongoClient(MONGO_URI)
 db = client['trolleyAppDB']
