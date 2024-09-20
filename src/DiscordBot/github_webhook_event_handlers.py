@@ -55,9 +55,11 @@ def agregar_comentario_issue(issue_id, comentario):
     mutation = """
     mutation($issueId: ID!, $body: String!) {
       addComment(input: {subjectId: $issueId, body: $body}) {
-        comment {
-          id
-          body
+        commentEdge {
+          node {
+            id
+            body
+          }
         }
       }
     }
