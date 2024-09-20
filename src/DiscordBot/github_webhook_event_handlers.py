@@ -73,6 +73,34 @@ def agregar_comentario_issue(issue_id, comentario):
     else:
         print("Comentario agregado exitosamente")
 
+
+# Función para agregar un comentario en el issue etiquetando a los usuarios permitidos
+def alertar_autorizados(issue_id, usuario_reabrio, usuarios_permitidos):
+    # Crear el mensaje mencionando a los usuarios autorizados
+    menciones = ' '.join([f"@{user}" for user in usuarios_permitidos])
+    comentario = f"⚠️ El usuario **{usuario_reabrio}** reabrió el issue, pero no tiene permisos. Notificando a {menciones}."
+
+    mutation = """
+    mutation($issueId: ID!, $body: String!) {
+      addComment(input: {subjectId: $issueId, body: $body}) {
+        commentEdge {
+          node {
+            id
+            body
+          }
+        }
+      }
+    }
+    """
+    variables = {'issueId': issue_id, 'body': comentario}
+
+    resultado = ejecutar_consulta_graphql(mutation, variables)
+
+    if 'errors' in resultado:
+        print(f"Error al agregar comentario en el issue: {resultado['errors']}")
+    else:
+        print("Comentario agregado exitosamente")
+
 # Aquí están todos los manejadores de eventos
 def handle_push_event(data):
     pusher = data['pusher']['name']
@@ -105,6 +133,17 @@ def handle_issue_event(data):
 
             # Enviar mensaje a Discord indicando que no tiene permisos
             message = f"⚠️ **{closed_by}** intentó cerrar el issue '{issue_title}' en **{repo_name}**, pero no tiene permisos. El issue ha sido reabierto.\n🔗 [Ver issue]({issue_url})"
+            send_to_discord(message, data)
+
+    elif action == 'reopened':
+        reopened_by = data['sender']['login']  # Usuario que reabrió el issue
+
+        if reopened_by not in USUARIOS_PERMITIDOS:
+            # Agregar un comentario en el issue notificando a los usuarios permitidos
+            alertar_autorizados(issue_id, reopened_by, USUARIOS_PERMITIDOS)
+
+            # Enviar mensaje a Discord indicando que alguien reabrió el issue sin permisos
+            message = f"⚠️ @Manager  **{reopened_by}** reabrió el issue '{issue_title}' en **{repo_name}**, pero no tiene permisos.\n🔗 [Ver issue]({issue_url})"
             send_to_discord(message, data)
 
     else:
