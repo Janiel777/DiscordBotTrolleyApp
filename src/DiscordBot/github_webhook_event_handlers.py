@@ -1,7 +1,75 @@
+import requests
 
 from DiscordBot.bot import send_to_discord, bot
+from environment_variables import GITHUB_TOKEN
+
+# Lista de usuarios permitidos para cerrar issues
+USUARIOS_PERMITIDOS = ['gabrielpadilla7', 'Yahid1']
+# URL de la API de GitHub GraphQL
+GITHUB_GRAPHQL_API_URL = 'https://api.github.com/graphql'
 
 
+# Función para hacer una solicitud GraphQL
+def ejecutar_consulta_graphql(query, variables):
+    headers = {
+        'Authorization': f'bearer {GITHUB_TOKEN}',
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.post(
+        GITHUB_GRAPHQL_API_URL,
+        json={'query': query, 'variables': variables},
+        headers=headers
+    )
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f"Error en la solicitud GraphQL: {response.status_code}, {response.text}")
+
+
+# Función para reabrir un issue usando GraphQL
+def reabrir_issue_graphql(issue_id):
+    mutation = """
+    mutation($issueId: ID!) {
+      updateIssue(input: {id: $issueId, state: OPEN}) {
+        issue {
+          id
+          state
+        }
+      }
+    }
+    """
+    variables = {'issueId': issue_id}
+
+    resultado = ejecutar_consulta_graphql(mutation, variables)
+
+    if 'errors' in resultado:
+        print(f"Error al reabrir el issue: {resultado['errors']}")
+    else:
+        print("Issue reabierto exitosamente")
+
+
+# Función para agregar un comentario en el issue
+def agregar_comentario_issue(issue_id, comentario):
+    mutation = """
+    mutation($issueId: ID!, $body: String!) {
+      addComment(input: {subjectId: $issueId, body: $body}) {
+        comment {
+          id
+          body
+        }
+      }
+    }
+    """
+    variables = {'issueId': issue_id, 'body': comentario}
+
+    resultado = ejecutar_consulta_graphql(mutation, variables)
+
+    if 'errors' in resultado:
+        print(f"Error al agregar comentario en el issue: {resultado['errors']}")
+    else:
+        print("Comentario agregado exitosamente")
 
 # Aquí están todos los manejadores de eventos
 def handle_push_event(data):
@@ -14,14 +82,33 @@ def handle_push_event(data):
     send_to_discord(message, data)
 
 
-
+# Función para manejar eventos de issue
 def handle_issue_event(data):
     action = data['action']
     issue_title = data['issue']['title']
     issue_url = data['issue']['html_url']
+    issue_id = data['issue']['node_id']  # Obtener el ID del issue para GraphQL
     repo_name = data['repository']['full_name']
-    message = f"🐛 **Issue** '{issue_title}' fue **{action}** en **{repo_name}**.\n🔗 [Ver issue]({issue_url})"
-    send_to_discord(message, data)
+
+    if action == 'closed':
+        closed_by = data['sender']['login']  # Usuario que cerró el issue
+
+        if closed_by not in USUARIOS_PERMITIDOS:
+            # Reabrir el issue si el usuario no tiene permisos
+            reabrir_issue_graphql(issue_id)
+
+            # Agregar un comentario en el issue indicando que el usuario no tiene permisos
+            comentario = f"⚠️ **{closed_by}** intentó cerrar el issue, pero no tiene permisos para hacerlo. El issue ha sido reabierto."
+            agregar_comentario_issue(issue_id, comentario)
+
+            # Enviar mensaje a Discord indicando que no tiene permisos
+            message = f"⚠️ **{closed_by}** intentó cerrar el issue '{issue_title}' en **{repo_name}**, pero no tiene permisos. El issue ha sido reabierto.\n🔗 [Ver issue]({issue_url})"
+            send_to_discord(message, data)
+
+    else:
+        # Si el issue no fue cerrado, solo enviar un mensaje de evento normal
+        message = f"🐛 **Issue** '{issue_title}' fue **{action}** en **{repo_name}**.\n🔗 [Ver issue]({issue_url})"
+        send_to_discord(message, data)
 
 
 def handle_issue_comment_event(data):
